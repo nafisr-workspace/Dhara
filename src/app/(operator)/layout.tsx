@@ -1,7 +1,9 @@
-export default function OperatorLayout({
+import { OperatorLayout } from "@/components/layout/operator-layout"
+
+export default function OperatorRouteLayout({
   children,
 }: Readonly<{
   children: React.ReactNode
 }>) {
-  return <>{children}</>
+  return <OperatorLayout>{children}</OperatorLayout>
 }

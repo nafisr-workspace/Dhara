@@ -2,19 +2,23 @@
 
 import * as React from "react"
 import Link from "next/link"
-import { useSearchParams } from "next/navigation"
+import { useRouter, useSearchParams } from "next/navigation"
 import { Backpack, Building } from "lucide-react"
 
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card"
 import { PublicHeader } from "@/components/layout/public-header"
 import { PublicFooter } from "@/components/layout/public-footer"
+import { loginAs, getRedirectForRole } from "@/lib/mock-auth"
 
 function SignupContent() {
+  const router = useRouter()
   const searchParams = useSearchParams()
   const redirect = searchParams.get("redirect")
 
   const handleRoleSelect = (role: "guest" | "operator") => {
-    alert(`Selected role: ${role}. Google OAuth mock triggered.`)
+    loginAs(role)
+    const target = redirect || getRedirectForRole(role)
+    router.push(target)
   }
 
   return (
