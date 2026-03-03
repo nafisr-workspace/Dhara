@@ -4,7 +4,8 @@ import { SlidersHorizontal } from "lucide-react"
 import { PublicHeader } from "@/components/layout/public-header"
 import { PublicFooter } from "@/components/layout/public-footer"
 import { PlaceCard } from "@/components/shared/place-card"
-import { mockFacilities } from "@/lib/mock-data"
+import { mockFacilities, type Facility } from "@/lib/mock-data"
+import { filterByRadius } from "@/lib/utils/geo"
 import { Button } from "@/components/ui/button"
 import { Sheet, SheetContent, SheetTrigger, SheetTitle } from "@/components/ui/sheet"
 import { Label } from "@/components/ui/label"
@@ -12,6 +13,7 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@
 import { Checkbox } from "@/components/ui/checkbox"
 import { Slider } from "@/components/ui/slider"
 import { DateRangePicker } from "@/components/shared/date-range-picker"
+import { PlacesContent } from "./places-content"
 
 // Simple mock sidebar filter UI
 function FilterSidebar() {
@@ -80,14 +82,39 @@ export default async function PlacesPage({
 }: {
   searchParams: Promise<{ [key: string]: string | string[] | undefined }>
 }) {
-  // Await searchParams in Next 15+
-  const resolvedParams = await searchParams;
-  
-  // Apply a basic mock filter if 'region' is provided
+  const resolvedParams = await searchParams
+
   const regionQuery = resolvedParams.region as string | undefined
-  const displayedFacilities = regionQuery && regionQuery !== "any"
-    ? mockFacilities.filter(f => f.division.toLowerCase() === regionQuery.toLowerCase())
-    : mockFacilities
+  const latParam = resolvedParams.lat as string | undefined
+  const lngParam = resolvedParams.lng as string | undefined
+  const radiusParam = resolvedParams.radius as string | undefined
+  const locationName = resolvedParams.location as string | undefined
+
+  const lat = latParam ? parseFloat(latParam) : undefined
+  const lng = lngParam ? parseFloat(lngParam) : undefined
+  const radius = radiusParam ? parseInt(radiusParam, 10) : 25
+
+  let displayedFacilities: Facility[]
+  let geoCenter: { lat: number; lng: number } | undefined
+  let geoRadius: number | undefined
+
+  if (lat !== undefined && lng !== undefined && !isNaN(lat) && !isNaN(lng)) {
+    geoCenter = { lat, lng }
+    geoRadius = radius
+    displayedFacilities = filterByRadius(mockFacilities, geoCenter, geoRadius)
+  } else if (regionQuery && regionQuery !== "any") {
+    displayedFacilities = mockFacilities.filter(
+      (f) => f.division.toLowerCase() === regionQuery.toLowerCase()
+    )
+  } else {
+    displayedFacilities = mockFacilities
+  }
+
+  const heading = locationName
+    ? `Places near ${locationName}`
+    : regionQuery && regionQuery !== "any"
+      ? `Places in ${regionQuery.charAt(0).toUpperCase() + regionQuery.slice(1)}`
+      : "Explore Places"
 
   return (
     <div className="flex min-h-screen flex-col">
@@ -96,8 +123,10 @@ export default async function PlacesPage({
       <main className="flex-1 bg-muted/10">
         <div className="container mx-auto px-4 py-8 md:px-8">
           <div className="flex flex-col gap-6 md:flex-row md:items-center md:justify-between mb-8">
-            <h1 className="font-heading text-3xl font-bold tracking-tight">Explore Places</h1>
-            
+            <h1 className="font-heading text-3xl font-bold tracking-tight">
+              {heading}
+            </h1>
+
             <div className="flex items-center justify-between gap-4">
               {/* Mobile Filter Trigger */}
               <Sheet>
@@ -113,7 +142,9 @@ export default async function PlacesPage({
               </Sheet>
 
               <p className="text-sm text-muted-foreground hidden md:block">
-                Showing {displayedFacilities.length} {displayedFacilities.length === 1 ? 'place' : 'places'}
+                Showing {displayedFacilities.length}{" "}
+                {displayedFacilities.length === 1 ? "place" : "places"}
+                {geoCenter && geoRadius && ` within ${geoRadius} km`}
               </p>
 
               <Select defaultValue="recommended">
@@ -135,24 +166,19 @@ export default async function PlacesPage({
               <FilterSidebar />
             </aside>
 
-            {/* Main Grid */}
+            {/* Main content: grid or map */}
             <div className="flex-1">
               <p className="text-sm text-muted-foreground md:hidden mb-4">
-                Showing {displayedFacilities.length} {displayedFacilities.length === 1 ? 'place' : 'places'}
+                Showing {displayedFacilities.length}{" "}
+                {displayedFacilities.length === 1 ? "place" : "places"}
+                {geoCenter && geoRadius && ` within ${geoRadius} km`}
               </p>
-              
-              {displayedFacilities.length > 0 ? (
-                <div className="grid grid-cols-1 gap-6 sm:grid-cols-2 lg:grid-cols-3">
-                  {displayedFacilities.map((facility) => (
-                    <PlaceCard key={facility.id} facility={facility} />
-                  ))}
-                </div>
-              ) : (
-                <div className="flex flex-col items-center justify-center p-12 text-center border rounded-lg bg-card">
-                  <h3 className="text-lg font-semibold mb-2">No places found</h3>
-                  <p className="text-muted-foreground">Try adjusting your filters or search criteria.</p>
-                </div>
-              )}
+
+              <PlacesContent
+                facilities={displayedFacilities}
+                center={geoCenter}
+                radius={geoRadius}
+              />
             </div>
           </div>
         </div>

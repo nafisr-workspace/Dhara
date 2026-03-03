@@ -1,12 +1,12 @@
 import Link from "next/link"
-import { ArrowRight, BadgeCheck, Leaf } from "lucide-react"
+import { ArrowRight, Leaf } from "lucide-react"
 
 import { Button } from "@/components/ui/button"
 import { PublicHeader } from "@/components/layout/public-header"
 import { PublicFooter } from "@/components/layout/public-footer"
 import { PlaceCard } from "@/components/shared/place-card"
 import { DestinationChip } from "@/components/shared/destination-chip"
-import { SearchBar } from "@/components/shared/search-bar"
+import { HeroSection } from "@/components/shared/hero-section"
 import { mockFacilities } from "@/lib/mock-data"
 
 const destinations = [
@@ -26,28 +26,7 @@ export default function HomePage() {
       <PublicHeader />
 
       <main className="flex-1">
-        {/* Hero — light, search-forward */}
-        <section className="relative overflow-hidden bg-gradient-to-b from-background to-muted/30 pt-12 pb-16 md:pt-20 md:pb-24">
-          <div className="container mx-auto px-4 md:px-8 text-center">
-            <h1 className="mx-auto max-w-xl font-heading text-3xl font-bold tracking-tight sm:text-4xl md:text-5xl">
-              Find your next purposeful stay
-            </h1>
-            <p className="mx-auto mt-4 max-w-md text-muted-foreground">
-              Trusted NGO accommodations across Bangladesh
-            </p>
-
-            {/* Inline search */}
-            <div className="mt-8 md:mt-10">
-              <SearchBar />
-            </div>
-
-            {/* Trust line */}
-            <div className="mt-6 flex items-center justify-center gap-1.5 text-sm text-muted-foreground">
-              <BadgeCheck className="h-4 w-4 text-primary" />
-              <span>Verified facilities in 15 districts</span>
-            </div>
-          </div>
-        </section>
+        <HeroSection />
 
         {/* Destination categories */}
         <section className="border-b py-10">

@@ -21,6 +21,8 @@ export type Facility = {
   division: string
   district: string
   area: string
+  lat: number
+  lng: number
   coverImageUrl: string
   photos: { url: string; alt: string }[]
   priceFrom: number
@@ -797,6 +799,8 @@ export const mockFacilities: Facility[] = [
     division: "Sylhet",
     district: "Sylhet",
     area: "Sadar",
+    lat: 24.8949,
+    lng: 91.8687,
     coverImageUrl: "https://images.unsplash.com/photo-1590490360182-c33d57733427?auto=format&fit=crop&q=80&w=800",
     photos: [
       { url: "https://images.unsplash.com/photo-1590490360182-c33d57733427?auto=format&fit=crop&q=80&w=1200", alt: "Guesthouse exterior" },
@@ -837,6 +841,8 @@ export const mockFacilities: Facility[] = [
     division: "Barisal",
     district: "Barisal",
     area: "Sadar",
+    lat: 22.701,
+    lng: 90.3535,
     coverImageUrl: "https://images.unsplash.com/photo-1587061949409-02df41d5e562?auto=format&fit=crop&q=80&w=800",
     photos: [
       { url: "https://images.unsplash.com/photo-1587061949409-02df41d5e562?auto=format&fit=crop&q=80&w=1200", alt: "Main building" },
@@ -874,6 +880,8 @@ export const mockFacilities: Facility[] = [
     division: "Rajshahi",
     district: "Rajshahi",
     area: "Uposhahar",
+    lat: 24.3636,
+    lng: 88.6241,
     coverImageUrl: "https://images.unsplash.com/photo-1522708323590-d24dbb6b0267?auto=format&fit=crop&q=80&w=800",
     photos: [
       { url: "https://images.unsplash.com/photo-1522708323590-d24dbb6b0267?auto=format&fit=crop&q=80&w=1200", alt: "Living room" },
@@ -910,6 +918,8 @@ export const mockFacilities: Facility[] = [
     division: "Khulna",
     district: "Bagerhat",
     area: "Mongla",
+    lat: 22.8456,
+    lng: 89.5403,
     coverImageUrl: "https://images.unsplash.com/photo-1501785888041-af3ef285b470?auto=format&fit=crop&q=80&w=800",
     photos: [
       { url: "https://images.unsplash.com/photo-1501785888041-af3ef285b470?auto=format&fit=crop&q=80&w=1200", alt: "Surrounding nature" },
@@ -945,6 +955,8 @@ export const mockFacilities: Facility[] = [
     division: "Chittagong",
     district: "Bandarban",
     area: "Sadar",
+    lat: 22.1953,
+    lng: 92.2184,
     coverImageUrl: "https://images.unsplash.com/photo-1506905925346-21bda4d32df4?auto=format&fit=crop&q=80&w=800",
     photos: [
       { url: "https://images.unsplash.com/photo-1506905925346-21bda4d32df4?auto=format&fit=crop&q=80&w=1200", alt: "Hill view" },
@@ -980,6 +992,8 @@ export const mockFacilities: Facility[] = [
     division: "Dhaka",
     district: "Dhaka",
     area: "Banani",
+    lat: 23.8103,
+    lng: 90.4125,
     coverImageUrl: "https://images.unsplash.com/photo-1554995207-c18c203602cb?auto=format&fit=crop&q=80&w=800",
     photos: [
       { url: "https://images.unsplash.com/photo-1554995207-c18c203602cb?auto=format&fit=crop&q=80&w=1200", alt: "Room interior" },
