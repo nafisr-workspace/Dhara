@@ -1,8 +1,10 @@
 "use client"
 
 import React, { useState, useMemo } from "react"
+import { useRouter } from "next/navigation"
 import { PageHeader } from "@/components/layout/page-header"
 import { FrontDeskGuestCard } from "@/components/shared/front-desk-guest-card"
+import { GuestProfileSheet } from "@/components/shared/guest-profile-sheet"
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
 import { Button } from "@/components/ui/button"
 import { Input } from "@/components/ui/input"
@@ -23,71 +25,92 @@ import {
 import { Checkbox } from "@/components/ui/checkbox"
 import { Label } from "@/components/ui/label"
 import { Badge } from "@/components/ui/badge"
-import { mockBookings, mockFacilities } from "@/lib/mock-data"
+import {
+  mockBookings,
+  mockFacilities,
+  mockGuestProfiles,
+  type MockUserProfile,
+} from "@/lib/mock-data"
 import { format } from "date-fns"
 import { Search, Calendar } from "lucide-react"
 
 type GuestEntry = {
   id: string
+  guestId: string
   guestName: string
+  email: string
   phone: string
+  rating: number
+  reviewCount: number
   roomName: string
   bookingCode: string
-  status: "upcoming" | "checked_in" | "completed" | "cancelled"
+  checkinDate: string
+  checkoutDate: string
+  status: "pending_approval" | "upcoming" | "checked_in" | "completed" | "cancelled"
   paymentStatus: "pending" | "paid" | "refunded" | "cash_pending"
   paymentMethod: "bkash" | "nagad" | "card" | "cash" | null
   totalAmount: number
   facilityId: string
-}
-
-const guestNames: Record<string, string> = {
-  "u-guest-1": "Nadia Rahman",
-  "u-guest-2": "Arif Khan",
-  "u-guest-3": "Sabrina Chowdhury",
-}
-
-const guestPhones: Record<string, string> = {
-  "u-guest-1": "01712-345678",
-  "u-guest-2": "01819-876543",
-  "u-guest-3": "01655-112233",
+  specialRequests: string | null
 }
 
 function buildEntries(): { arrivals: GuestEntry[]; departures: GuestEntry[] } {
   const arrivals: GuestEntry[] = mockBookings
     .filter((b) => b.status === "upcoming")
     .slice(0, 3)
-    .map((b) => ({
-      id: b.id,
-      guestName: guestNames[b.guestId] ?? "Guest",
-      phone: guestPhones[b.guestId] ?? "01700-000000",
-      roomName: b.roomName,
-      bookingCode: b.bookingCode,
-      status: b.status,
-      paymentStatus: b.paymentStatus,
-      paymentMethod: b.paymentMethod,
-      totalAmount: b.totalAmount,
-      facilityId: b.facilityId,
-    }))
+    .map((b) => {
+      const profile = mockGuestProfiles[b.guestId]
+      return {
+        id: b.id,
+        guestId: b.guestId,
+        guestName: profile?.fullName ?? "Guest",
+        email: profile?.email ?? "",
+        phone: profile?.phone ?? "",
+        rating: profile?.rating ?? 0,
+        reviewCount: profile?.reviewCount ?? 0,
+        roomName: b.roomName,
+        bookingCode: b.bookingCode,
+        checkinDate: b.checkinDate,
+        checkoutDate: b.checkoutDate,
+        status: b.status,
+        paymentStatus: b.paymentStatus,
+        paymentMethod: b.paymentMethod,
+        totalAmount: b.totalAmount,
+        facilityId: b.facilityId,
+        specialRequests: b.specialRequests,
+      }
+    })
 
   const departures: GuestEntry[] = mockBookings
     .filter((b) => b.status === "checked_in")
-    .map((b) => ({
-      id: b.id,
-      guestName: guestNames[b.guestId] ?? "Guest",
-      phone: guestPhones[b.guestId] ?? "01700-000000",
-      roomName: b.roomName,
-      bookingCode: b.bookingCode,
-      status: b.status,
-      paymentStatus: b.paymentStatus,
-      paymentMethod: b.paymentMethod,
-      totalAmount: b.totalAmount,
-      facilityId: b.facilityId,
-    }))
+    .map((b) => {
+      const profile = mockGuestProfiles[b.guestId]
+      return {
+        id: b.id,
+        guestId: b.guestId,
+        guestName: profile?.fullName ?? "Guest",
+        email: profile?.email ?? "",
+        phone: profile?.phone ?? "",
+        rating: profile?.rating ?? 0,
+        reviewCount: profile?.reviewCount ?? 0,
+        roomName: b.roomName,
+        bookingCode: b.bookingCode,
+        checkinDate: b.checkinDate,
+        checkoutDate: b.checkoutDate,
+        status: b.status,
+        paymentStatus: b.paymentStatus,
+        paymentMethod: b.paymentMethod,
+        totalAmount: b.totalAmount,
+        facilityId: b.facilityId,
+        specialRequests: b.specialRequests,
+      }
+    })
 
   return { arrivals, departures }
 }
 
 export default function FrontDeskPage() {
+  const router = useRouter()
   const today = new Date()
   const [selectedFacility, setSelectedFacility] = useState<string>("all")
   const [searchQuery, setSearchQuery] = useState("")
@@ -97,6 +120,10 @@ export default function FrontDeskPage() {
   const [selectedGuest, setSelectedGuest] = useState<GuestEntry | null>(null)
   const [idVerified, setIdVerified] = useState(false)
   const [cashCollected, setCashCollected] = useState(false)
+
+  const [profileSheetOpen, setProfileSheetOpen] = useState(false)
+  const [profileGuest, setProfileGuest] = useState<MockUserProfile | null>(null)
+  const [profileBooking, setProfileBooking] = useState<GuestEntry | null>(null)
 
   const facilities = mockFacilities.slice(0, 2)
   const { arrivals, departures } = useMemo(() => buildEntries(), [])
@@ -151,6 +178,18 @@ export default function FrontDeskPage() {
     setSelectedGuest(null)
   }
 
+  function handleViewProfile(guest: GuestEntry) {
+    const profile = mockGuestProfiles[guest.guestId] ?? null
+    setProfileGuest(profile)
+    setProfileBooking(guest)
+    setProfileSheetOpen(true)
+  }
+
+  function handleOpenChat(guest: GuestEntry) {
+    const bookingId = guest.id
+    router.push(`/operator/messages?booking=${bookingId}`)
+  }
+
   const needsCashCollection =
     selectedGuest?.paymentMethod === "cash" &&
     selectedGuest?.paymentStatus === "cash_pending"
@@ -184,33 +223,30 @@ export default function FrontDeskPage() {
         }
       />
 
-      {/* Search bar */}
       <div className="relative max-w-lg">
         <Search className="absolute left-3 top-1/2 h-5 w-5 -translate-y-1/2 text-muted-foreground" />
         <Input
           placeholder="Search by guest name, phone, or booking code..."
           value={searchQuery}
           onChange={(e) => setSearchQuery(e.target.value)}
-          className="min-h-[48px] pl-10 text-base"
+          className="min-h-[44px] pl-10 text-base"
         />
       </div>
 
-      {/* Two-column layout */}
       <div className="grid gap-6 md:grid-cols-2">
-        {/* Arrivals */}
         <Card>
-          <CardHeader className="pb-4">
-            <CardTitle className="flex items-center gap-2 font-heading text-xl">
-              <span className="inline-block h-3 w-3 rounded-full bg-success" />
+          <CardHeader className="pb-3">
+            <CardTitle className="flex items-center gap-2 font-heading text-lg">
+              <span className="inline-block h-2.5 w-2.5 rounded-full bg-success" />
               Arrivals Today
-              <Badge variant="secondary" className="ml-auto text-sm">
+              <Badge variant="secondary" className="ml-auto text-xs">
                 {filteredArrivals.length}
               </Badge>
             </CardTitle>
           </CardHeader>
-          <CardContent className="space-y-4">
+          <CardContent className="space-y-3">
             {filteredArrivals.length === 0 ? (
-              <p className="py-6 text-center text-muted-foreground">
+              <p className="py-6 text-center text-sm text-muted-foreground">
                 No arrivals today
               </p>
             ) : (
@@ -218,6 +254,10 @@ export default function FrontDeskPage() {
                 <FrontDeskGuestCard
                   key={guest.id}
                   guestName={guest.guestName}
+                  guestEmail={guest.email}
+                  guestPhone={guest.phone}
+                  guestRating={guest.rating}
+                  guestReviewCount={guest.reviewCount}
                   roomName={guest.roomName}
                   bookingCode={guest.bookingCode}
                   status={guest.status}
@@ -226,26 +266,27 @@ export default function FrontDeskPage() {
                   totalAmount={guest.totalAmount}
                   type="arrival"
                   onAction={() => openCheckin(guest)}
+                  onViewProfile={() => handleViewProfile(guest)}
+                  onOpenChat={() => handleOpenChat(guest)}
                 />
               ))
             )}
           </CardContent>
         </Card>
 
-        {/* Departures */}
         <Card>
-          <CardHeader className="pb-4">
-            <CardTitle className="flex items-center gap-2 font-heading text-xl">
-              <span className="inline-block h-3 w-3 rounded-full bg-accent" />
+          <CardHeader className="pb-3">
+            <CardTitle className="flex items-center gap-2 font-heading text-lg">
+              <span className="inline-block h-2.5 w-2.5 rounded-full bg-accent" />
               Departures Today
-              <Badge variant="secondary" className="ml-auto text-sm">
+              <Badge variant="secondary" className="ml-auto text-xs">
                 {filteredDepartures.length}
               </Badge>
             </CardTitle>
           </CardHeader>
-          <CardContent className="space-y-4">
+          <CardContent className="space-y-3">
             {filteredDepartures.length === 0 ? (
-              <p className="py-6 text-center text-muted-foreground">
+              <p className="py-6 text-center text-sm text-muted-foreground">
                 No departures today
               </p>
             ) : (
@@ -253,6 +294,10 @@ export default function FrontDeskPage() {
                 <FrontDeskGuestCard
                   key={guest.id}
                   guestName={guest.guestName}
+                  guestEmail={guest.email}
+                  guestPhone={guest.phone}
+                  guestRating={guest.rating}
+                  guestReviewCount={guest.reviewCount}
                   roomName={guest.roomName}
                   bookingCode={guest.bookingCode}
                   status={guest.status}
@@ -261,6 +306,8 @@ export default function FrontDeskPage() {
                   totalAmount={guest.totalAmount}
                   type="departure"
                   onAction={() => openCheckout(guest)}
+                  onViewProfile={() => handleViewProfile(guest)}
+                  onOpenChat={() => handleOpenChat(guest)}
                 />
               ))
             )}
@@ -268,7 +315,24 @@ export default function FrontDeskPage() {
         </Card>
       </div>
 
-      {/* Check-in Dialog */}
+      <GuestProfileSheet
+        open={profileSheetOpen}
+        onOpenChange={setProfileSheetOpen}
+        guest={profileGuest}
+        bookingDetails={
+          profileBooking
+            ? {
+                roomName: profileBooking.roomName,
+                bookingCode: profileBooking.bookingCode,
+                checkinDate: profileBooking.checkinDate,
+                checkoutDate: profileBooking.checkoutDate,
+                specialRequests: profileBooking.specialRequests,
+                totalAmount: profileBooking.totalAmount,
+              }
+            : undefined
+        }
+      />
+
       <Dialog open={checkinDialogOpen} onOpenChange={setCheckinDialogOpen}>
         <DialogContent className="sm:max-w-md">
           <DialogHeader>
@@ -279,7 +343,6 @@ export default function FrontDeskPage() {
 
           {selectedGuest && (
             <div className="space-y-5">
-              {/* Guest info */}
               <div className="space-y-1">
                 <p className="text-lg font-semibold">{selectedGuest.guestName}</p>
                 <p className="font-mono text-sm text-muted-foreground">
@@ -290,7 +353,6 @@ export default function FrontDeskPage() {
                 </p>
               </div>
 
-              {/* ID verification */}
               <div className="rounded-lg border p-4 space-y-3">
                 <div className="flex items-center gap-2">
                   <Badge variant="outline" className="text-sm">
@@ -315,7 +377,6 @@ export default function FrontDeskPage() {
                 </div>
               </div>
 
-              {/* Cash collection (only for cash bookings) */}
               {needsCashCollection && (
                 <div className="rounded-lg border-2 border-warning bg-warning/10 p-4 space-y-3">
                   <div className="text-center">
@@ -366,7 +427,6 @@ export default function FrontDeskPage() {
         </DialogContent>
       </Dialog>
 
-      {/* Check-out Dialog */}
       <Dialog open={checkoutDialogOpen} onOpenChange={setCheckoutDialogOpen}>
         <DialogContent className="sm:max-w-md">
           <DialogHeader>

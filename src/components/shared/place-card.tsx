@@ -4,6 +4,7 @@ import { MapPin } from "lucide-react"
 import { type SafetyBadgeType } from "./safety-badge"
 import { ImpactLine } from "./impact-line"
 import { PriceDisplay } from "./price-display"
+import { StarRating } from "./star-rating"
 import { cn } from "@/lib/utils"
 
 export interface PlaceCardProps {
@@ -13,6 +14,8 @@ export interface PlaceCardProps {
     location: string
     coverImageUrl: string
     priceFrom: number
+    rating: number
+    reviewCount: number
     safetyTags: SafetyBadgeType[]
     impactLine: string
   }
@@ -46,6 +49,7 @@ export function PlaceCard({ facility, className }: PlaceCardProps) {
             <MapPin className="h-3.5 w-3.5 shrink-0" />
             <span className="line-clamp-1">{facility.location}</span>
           </div>
+          <StarRating rating={facility.rating} reviewCount={facility.reviewCount} size="sm" className="mt-1" />
         </div>
         <PriceDisplay amount={facility.priceFrom} period="/ night" className="shrink-0 text-right" />
       </div>

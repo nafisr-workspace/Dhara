@@ -121,6 +121,19 @@ export default function MessagesPage() {
                 <ScrollArea className="flex-1 px-4 py-4">
                   <div className="space-y-4">
                     {selectedThread.messages.map((msg) => {
+                      if (msg.type === "system" || msg.type === "booking_request") {
+                        return (
+                          <div key={msg.id} className="flex flex-col items-center gap-1">
+                            <div className="rounded-full bg-muted px-4 py-1.5 text-xs text-muted-foreground text-center max-w-[80%]">
+                              {msg.content}
+                            </div>
+                            <p className="text-[10px] text-muted-foreground">
+                              {format(new Date(msg.createdAt), "MMM d, h:mm a")}
+                            </p>
+                          </div>
+                        )
+                      }
+
                       const isMe = msg.senderId === mockGuestProfile.id
                       return (
                         <div

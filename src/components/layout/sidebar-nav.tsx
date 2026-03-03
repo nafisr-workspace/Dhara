@@ -11,7 +11,7 @@ import { Avatar, AvatarFallback } from "@/components/ui/avatar"
 import { getMockSession, logout, type MockSession } from "@/lib/mock-auth"
 
 export interface SidebarNavProps {
-  items: { href: string; label: string; icon: React.ReactNode }[]
+  items: { href: string; label: string; icon: React.ReactNode; badge?: number }[]
   title?: string
 }
 
@@ -62,6 +62,11 @@ export function SidebarNav({ items, title }: SidebarNavProps) {
             >
               {item.icon}
               {item.label}
+              {(item.badge ?? 0) > 0 && (
+                <span className="ml-auto flex h-5 min-w-5 items-center justify-center rounded-full bg-primary px-1.5 text-[10px] font-semibold text-primary-foreground">
+                  {item.badge}
+                </span>
+              )}
             </Link>
           )
         })}

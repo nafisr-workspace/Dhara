@@ -7,6 +7,7 @@ import {
   LayoutDashboard,
   Building,
   CalendarDays,
+  CalendarRange,
   ClipboardList,
   TrendingUp,
   MessageSquare,
@@ -27,15 +28,25 @@ import {
 } from "@/components/ui/sheet"
 import { SidebarNav } from "@/components/layout/sidebar-nav"
 import { getMockSession, logout, type MockSession } from "@/lib/mock-auth"
+import { mockThreads } from "@/lib/mock-data"
+
+const pendingRequestCount = mockThreads.filter((t) =>
+  t.messages.some(
+    (m) => m.type === "booking_request" && m.bookingRequestData?.status === "pending"
+  )
+).length
+
+const totalUnread = mockThreads.reduce((sum, t) => sum + t.unreadCount, 0) + pendingRequestCount
 
 const navItems = [
-  { href: "/operator/dashboard", label: "Dashboard", icon: <LayoutDashboard className="h-5 w-5" /> },
-  { href: "/operator/facilities", label: "Facilities", icon: <Building className="h-5 w-5" /> },
-  { href: "/operator/bookings", label: "Bookings", icon: <CalendarDays className="h-5 w-5" /> },
-  { href: "/operator/front-desk", label: "Front Desk", icon: <ClipboardList className="h-5 w-5" /> },
-  { href: "/operator/earnings", label: "Earnings", icon: <TrendingUp className="h-5 w-5" /> },
-  { href: "/operator/messages", label: "Messages", icon: <MessageSquare className="h-5 w-5" /> },
-  { href: "/operator/profile", label: "Profile", icon: <UserCircle className="h-5 w-5" /> },
+  { href: "/operator/front-desk", label: "Front Desk", icon: <ClipboardList className="h-5 w-5" />, badge: 0 },
+  { href: "/operator/dashboard", label: "Dashboard", icon: <LayoutDashboard className="h-5 w-5" />, badge: 0 },
+  { href: "/operator/facilities", label: "Facilities", icon: <Building className="h-5 w-5" />, badge: 0 },
+  { href: "/operator/calendar", label: "Calendar", icon: <CalendarRange className="h-5 w-5" />, badge: 0 },
+  { href: "/operator/bookings", label: "Bookings", icon: <CalendarDays className="h-5 w-5" />, badge: 0 },
+  { href: "/operator/earnings", label: "Earnings", icon: <TrendingUp className="h-5 w-5" />, badge: 0 },
+  { href: "/operator/messages", label: "Messages", icon: <MessageSquare className="h-5 w-5" />, badge: totalUnread },
+  { href: "/operator/profile", label: "Profile", icon: <UserCircle className="h-5 w-5" />, badge: 0 },
 ]
 
 function MobileTopBar() {
@@ -61,7 +72,7 @@ function MobileTopBar() {
 
   return (
     <header className="sticky top-0 z-40 flex h-14 items-center justify-between border-b bg-card px-4 md:hidden">
-      <Link href="/operator/dashboard" className="flex items-center gap-1.5">
+      <Link href="/operator/front-desk" className="flex items-center gap-1.5">
         <Droplets className="h-5 w-5 text-primary" />
         <span className="font-heading text-lg font-bold tracking-tight text-primary">
           Dhara
@@ -101,6 +112,11 @@ function MobileTopBar() {
                 >
                   {item.icon}
                   {item.label}
+                  {item.badge > 0 && (
+                    <span className="ml-auto flex h-5 min-w-5 items-center justify-center rounded-full bg-primary px-1.5 text-[10px] font-semibold text-primary-foreground">
+                      {item.badge}
+                    </span>
+                  )}
                 </Link>
               )
             })}

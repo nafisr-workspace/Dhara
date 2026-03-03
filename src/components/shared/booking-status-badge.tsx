@@ -3,6 +3,7 @@ import { Badge } from "@/components/ui/badge"
 import { cn } from "@/lib/utils"
 
 export type BookingStatus =
+  | "pending_approval"
   | "upcoming"
   | "checked_in"
   | "completed"
@@ -10,6 +11,7 @@ export type BookingStatus =
   | "cash_pending"
 
 const statusConfig: Record<BookingStatus, { label: string; className: string }> = {
+  pending_approval: { label: "Awaiting Approval", className: "bg-amber-100 text-amber-800 hover:bg-amber-200 dark:bg-amber-900/30 dark:text-amber-400" },
   upcoming: { label: "Upcoming", className: "bg-info/15 text-info-foreground hover:bg-info/20" },
   checked_in: { label: "Checked In", className: "bg-success/15 text-success-foreground hover:bg-success/20" },
   completed: { label: "Completed", className: "bg-muted text-muted-foreground hover:bg-muted" },

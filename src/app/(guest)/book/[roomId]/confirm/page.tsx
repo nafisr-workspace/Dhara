@@ -5,10 +5,11 @@ import Link from "next/link"
 import { Button } from "@/components/ui/button"
 import { Card, CardContent } from "@/components/ui/card"
 import { Separator } from "@/components/ui/separator"
+import { Badge } from "@/components/ui/badge"
 import { ImpactLine } from "@/components/shared/impact-line"
 import { mockFacilities } from "@/lib/mock-data"
 import { format } from "date-fns"
-import { Check, Search } from "lucide-react"
+import { Clock, Search } from "lucide-react"
 
 export default function BookingConfirmPage({
   params,
@@ -42,29 +43,30 @@ export default function BookingConfirmPage({
 
   return (
     <div className="mx-auto flex min-h-[70vh] max-w-lg flex-col items-center justify-center px-4 py-12">
-      {/* Animated checkmark */}
-      <div className="mb-6 flex h-20 w-20 animate-scale-in items-center justify-center rounded-full bg-primary/10">
-        <div className="flex h-14 w-14 items-center justify-center rounded-full bg-primary text-primary-foreground">
-          <Check className="h-8 w-8" strokeWidth={3} />
+      <div className="mb-6 flex h-20 w-20 animate-scale-in items-center justify-center rounded-full bg-amber-100 dark:bg-amber-900/30">
+        <div className="flex h-14 w-14 items-center justify-center rounded-full bg-amber-500 text-white">
+          <Clock className="h-8 w-8" strokeWidth={2.5} />
         </div>
       </div>
 
-      <h1 className="font-heading text-2xl font-semibold">Booking Confirmed!</h1>
-      <p className="mt-2 text-muted-foreground">
-        Your reservation is all set.
+      <h1 className="font-heading text-2xl font-semibold">Booking Submitted</h1>
+      <Badge className="mt-2 bg-amber-100 text-amber-800 border-transparent dark:bg-amber-900/30 dark:text-amber-400">
+        Awaiting Operator Approval
+      </Badge>
+      <p className="mt-3 text-center text-muted-foreground max-w-sm">
+        Your booking request has been sent to the facility operator. You will be
+        notified once they approve your reservation.
       </p>
 
-      {/* Booking code */}
-      <div className="mt-6 rounded-lg border-2 border-dashed border-primary/30 bg-primary/5 px-6 py-3 text-center">
+      <div className="mt-6 rounded-lg border-2 border-dashed border-amber-300/50 bg-amber-50/50 dark:bg-amber-950/10 px-6 py-3 text-center">
         <p className="text-xs font-medium uppercase tracking-wider text-muted-foreground">
           Booking Code
         </p>
-        <p className="mt-1 font-mono text-xl font-bold tracking-widest text-primary">
-          DHARA-KX7M-P2QL
+        <p className="mt-1 font-mono text-xl font-bold tracking-widest text-amber-700 dark:text-amber-400">
+          DHARA-NY2H-R5KL
         </p>
       </div>
 
-      {/* Summary card */}
       <Card className="mt-8 w-full">
         <CardContent className="space-y-3 pt-6 text-sm">
           {facility && (
@@ -91,6 +93,13 @@ export default function BookingConfirmPage({
               {format(checkoutDate, "EEE, MMM d, yyyy")}
             </span>
           </div>
+          <Separator />
+          <div className="flex justify-between items-center">
+            <span className="text-muted-foreground">Status</span>
+            <Badge className="bg-amber-100 text-amber-800 border-transparent dark:bg-amber-900/30 dark:text-amber-400">
+              Awaiting Approval
+            </Badge>
+          </div>
         </CardContent>
       </Card>
 
@@ -100,19 +109,17 @@ export default function BookingConfirmPage({
         </div>
       )}
 
-      {/* Reminder */}
       <Separator className="my-6 w-full" />
 
       <div className="w-full rounded-lg bg-muted/60 p-4 text-sm">
-        <p className="font-medium">What to bring</p>
-        <p className="mt-1 text-muted-foreground">
-          Please bring a valid <strong>National ID</strong> or{" "}
-          <strong>Passport</strong> for check-in verification. This is required
-          per local authority regulations.
-        </p>
+        <p className="font-medium">What happens next?</p>
+        <ol className="mt-2 space-y-1.5 text-muted-foreground list-decimal list-inside">
+          <li>The operator will review your booking request</li>
+          <li>You will receive a message once approved</li>
+          <li>Bring a valid <strong>National ID</strong> or <strong>Passport</strong> for check-in</li>
+        </ol>
       </div>
 
-      {/* CTAs */}
       <div className="mt-8 flex w-full flex-col gap-3 sm:flex-row">
         <Button asChild className="flex-1" size="lg">
           <Link href="/bookings">View My Bookings</Link>

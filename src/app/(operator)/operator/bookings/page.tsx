@@ -127,6 +127,7 @@ export default function OperatorBookingsPage() {
           </SelectTrigger>
           <SelectContent>
             <SelectItem value="all">All Statuses</SelectItem>
+            <SelectItem value="pending_approval">Awaiting Approval</SelectItem>
             <SelectItem value="upcoming">Upcoming</SelectItem>
             <SelectItem value="checked_in">Checked In</SelectItem>
             <SelectItem value="completed">Completed</SelectItem>

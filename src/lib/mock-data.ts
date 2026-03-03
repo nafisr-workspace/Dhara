@@ -24,6 +24,8 @@ export type Facility = {
   coverImageUrl: string
   photos: { url: string; alt: string }[]
   priceFrom: number
+  rating: number
+  reviewCount: number
   safetyTags: SafetyBadgeType[]
   impactLine: string
   impactStory: string
@@ -34,9 +36,11 @@ export type Facility = {
 
 // ── Booking types & data ────────────────────────────────────────────────────
 
-export type BookingStatus = "upcoming" | "checked_in" | "completed" | "cancelled"
+export type BookingStatus = "pending_approval" | "upcoming" | "checked_in" | "completed" | "cancelled"
 export type PaymentStatus = "pending" | "paid" | "refunded" | "cash_pending"
 export type PaymentMethod = "bkash" | "nagad" | "card" | "cash"
+
+export type BookingSource = "platform" | "manual"
 
 export type MockBooking = {
   id: string
@@ -63,8 +67,12 @@ export type MockBooking = {
   status: BookingStatus
   specialRequests: string | null
   impactLine: string
+  source: BookingSource
+  sourcePlatform?: string
   createdAt: string
 }
+
+export type MessageType = "text" | "booking_request" | "system"
 
 export type MockMessage = {
   id: string
@@ -72,6 +80,17 @@ export type MockMessage = {
   senderId: string
   senderName: string
   content: string
+  type: MessageType
+  bookingRequestData?: {
+    bookingId: string
+    guestName: string
+    roomName: string
+    checkinDate: string
+    checkoutDate: string
+    guestCount: number
+    totalAmount: number
+    status: "pending" | "approved" | "declined"
+  }
   readAt: string | null
   createdAt: string
 }
@@ -100,6 +119,14 @@ export type MockPayout = {
   paidAt: string | null
 }
 
+export type MfsAccountType = "bkash" | "nagad" | "bank"
+
+export type LinkedAccount = {
+  type: MfsAccountType
+  accountNumber: string
+  accountNumberMasked: string
+}
+
 export type MockUserProfile = {
   id: string
   fullName: string
@@ -109,10 +136,13 @@ export type MockUserProfile = {
   avatarUrl: string | null
   idType: "nid" | "passport" | null
   idLastFour: string | null
+  linkedAccount: LinkedAccount | null
   notificationSms: boolean
   notificationEmail: boolean
   totalNights: number
   totalBookings: number
+  rating: number
+  reviewCount: number
 }
 
 export type MockOrganization = {
@@ -134,6 +164,17 @@ export type AvailabilityBlock = {
   reason: string
 }
 
+export type MockReview = {
+  id: string
+  reviewerId: string
+  reviewerName: string
+  targetType: "facility" | "guest"
+  targetId: string
+  rating: number
+  comment: string
+  createdAt: string
+}
+
 // ── Mock user profiles ──────────────────────────────────────────────────────
 
 export const mockGuestProfile: MockUserProfile = {
@@ -143,12 +184,69 @@ export const mockGuestProfile: MockUserProfile = {
   phone: "+880 1712 345678",
   role: "guest",
   avatarUrl: null,
-  idType: "nid",
-  idLastFour: "4321",
+  idType: null,
+  idLastFour: null,
+  linkedAccount: { type: "bkash", accountNumber: "01712345678", accountNumberMasked: "****5678" },
   notificationSms: true,
   notificationEmail: true,
   totalNights: 12,
   totalBookings: 5,
+  rating: 4.8,
+  reviewCount: 4,
+}
+
+export const mockGuestProfiles: Record<string, MockUserProfile> = {
+  "u-guest-1": {
+    id: "u-guest-1",
+    fullName: "Nadia Rahman",
+    email: "nadia.r@gmail.com",
+    phone: "+880 1712 345678",
+    role: "guest",
+    avatarUrl: null,
+    idType: null,
+    idLastFour: null,
+    linkedAccount: { type: "bkash", accountNumber: "01712345678", accountNumberMasked: "****5678" },
+    notificationSms: true,
+    notificationEmail: true,
+    totalNights: 12,
+    totalBookings: 5,
+    rating: 4.8,
+    reviewCount: 4,
+  },
+  "u-guest-2": {
+    id: "u-guest-2",
+    fullName: "Arif Khan",
+    email: "arif.khan@outlook.com",
+    phone: "+880 1819 876543",
+    role: "guest",
+    avatarUrl: null,
+    idType: null,
+    idLastFour: null,
+    linkedAccount: { type: "nagad", accountNumber: "01819876543", accountNumberMasked: "****6543" },
+    notificationSms: true,
+    notificationEmail: true,
+    totalNights: 6,
+    totalBookings: 2,
+    rating: 4.5,
+    reviewCount: 2,
+  },
+  "u-guest-3": {
+    id: "u-guest-3",
+    fullName: "Sabrina Chowdhury",
+    email: "sabrina.c@yahoo.com",
+    phone: "+880 1655 112233",
+    role: "guest",
+    avatarUrl: null,
+    idType: null,
+    idLastFour: null,
+    linkedAccount: { type: "bank", accountNumber: "1234567890", accountNumberMasked: "****7890" },
+    notificationSms: true,
+    notificationEmail: true,
+    totalNights: 3,
+    totalBookings: 1,
+    rating: 5.0,
+    reviewCount: 1,
+  },
 }
 
 export const mockOperatorProfile: MockUserProfile = {
@@ -160,10 +258,13 @@ export const mockOperatorProfile: MockUserProfile = {
   avatarUrl: null,
   idType: null,
   idLastFour: null,
+  linkedAccount: null,
   notificationSms: true,
   notificationEmail: true,
   totalNights: 0,
   totalBookings: 0,
+  rating: 4.7,
+  reviewCount: 18,
 }
 
 export const mockOrganization: MockOrganization = {
@@ -209,6 +310,7 @@ export const mockBookings: MockBooking[] = [
     status: "upcoming",
     specialRequests: "Late check-in around 6 PM",
     impactLine: "Funds women's skills training",
+    source: "platform",
     createdAt: "2026-02-25T10:00:00Z",
   },
   {
@@ -236,6 +338,7 @@ export const mockBookings: MockBooking[] = [
     status: "upcoming",
     specialRequests: null,
     impactLine: "Supports indigenous artisans",
+    source: "platform",
     createdAt: "2026-02-28T14:00:00Z",
   },
   {
@@ -263,6 +366,7 @@ export const mockBookings: MockBooking[] = [
     status: "checked_in",
     specialRequests: "Need a quiet room",
     impactLine: "Funds girl child education",
+    source: "platform",
     createdAt: "2026-02-20T09:00:00Z",
   },
   {
@@ -290,6 +394,7 @@ export const mockBookings: MockBooking[] = [
     status: "completed",
     specialRequests: null,
     impactLine: "Funds urban youth programs",
+    source: "platform",
     createdAt: "2026-01-28T11:00:00Z",
   },
   {
@@ -317,6 +422,7 @@ export const mockBookings: MockBooking[] = [
     status: "completed",
     specialRequests: "Interested in the mangrove tour",
     impactLine: "Funds mangrove conservation",
+    source: "platform",
     createdAt: "2025-12-30T16:00:00Z",
   },
   {
@@ -344,6 +450,7 @@ export const mockBookings: MockBooking[] = [
     status: "cancelled",
     specialRequests: null,
     impactLine: "Supports local farmers' co-op",
+    source: "platform",
     createdAt: "2026-02-10T08:00:00Z",
   },
   {
@@ -371,6 +478,7 @@ export const mockBookings: MockBooking[] = [
     status: "checked_in",
     specialRequests: "Celebrating anniversary",
     impactLine: "Funds women's skills training",
+    source: "platform",
     createdAt: "2026-02-20T12:00:00Z",
   },
   {
@@ -398,7 +506,92 @@ export const mockBookings: MockBooking[] = [
     status: "upcoming",
     specialRequests: null,
     impactLine: "Funds women's skills training",
+    source: "platform",
     createdAt: "2026-02-27T15:00:00Z",
+  },
+  {
+    id: "b-9",
+    bookingCode: "DHARA-NY2H-R5KL",
+    guestId: "u-guest-1",
+    roomId: "r-1-1",
+    facilityId: "f-1",
+    facilityName: "Shanti Neer Guesthouse",
+    facilitySlug: "shanti-neer-guesthouse",
+    facilityImage: "https://images.unsplash.com/photo-1590490360182-c33d57733427?auto=format&fit=crop&q=80&w=400",
+    facilityLocation: "Sylhet Sadar, Sylhet",
+    roomName: "Standard Double",
+    checkinDate: "2026-04-10",
+    checkoutDate: "2026-04-13",
+    guestCount: 2,
+    mealIncluded: true,
+    roomRate: 1500,
+    mealCharge: 1200,
+    platformFee: 216,
+    taxAmount: 146,
+    totalAmount: 6062,
+    paymentStatus: "pending",
+    paymentMethod: "bkash",
+    status: "pending_approval",
+    specialRequests: "Would love a room with a garden view",
+    impactLine: "Funds women's skills training",
+    source: "platform",
+    createdAt: "2026-03-02T09:00:00Z",
+  },
+  {
+    id: "b-10",
+    bookingCode: "DHARA-FK3T-Q8WB",
+    guestId: "u-guest-2",
+    roomId: "r-2-2",
+    facilityId: "f-2",
+    facilityName: "Grameen Training Centre",
+    facilitySlug: "grameen-training-centre",
+    facilityImage: "https://images.unsplash.com/photo-1587061949409-02df41d5e562?auto=format&fit=crop&q=80&w=400",
+    facilityLocation: "Sadar Road, Barisal",
+    roomName: "Private Double",
+    checkinDate: "2026-03-20",
+    checkoutDate: "2026-03-23",
+    guestCount: 2,
+    mealIncluded: true,
+    roomRate: 1200,
+    mealCharge: 900,
+    platformFee: 168,
+    taxAmount: 113,
+    totalAmount: 4781,
+    paymentStatus: "pending",
+    paymentMethod: "nagad",
+    status: "pending_approval",
+    specialRequests: "We are attending a research conference nearby",
+    impactLine: "Supports local farmers' co-op",
+    source: "platform",
+    createdAt: "2026-03-02T14:30:00Z",
+  },
+  {
+    id: "b-11",
+    bookingCode: "DHARA-HW5N-V2MC",
+    guestId: "u-guest-3",
+    roomId: "r-4-1",
+    facilityId: "f-4",
+    facilityName: "Coastal Climate Centre",
+    facilitySlug: "coastal-climate-centre",
+    facilityImage: "https://images.unsplash.com/photo-1501785888041-af3ef285b470?auto=format&fit=crop&q=80&w=400",
+    facilityLocation: "Mongla, Khulna",
+    roomName: "Eco Lodge Double",
+    checkinDate: "2026-03-25",
+    checkoutDate: "2026-03-28",
+    guestCount: 1,
+    mealIncluded: true,
+    roomRate: 1800,
+    mealCharge: 1500,
+    platformFee: 264,
+    taxAmount: 178,
+    totalAmount: 7142,
+    paymentStatus: "pending",
+    paymentMethod: "card",
+    status: "pending_approval",
+    specialRequests: "Interested in the Sundarbans boat tour if available",
+    impactLine: "Funds mangrove conservation",
+    source: "platform",
+    createdAt: "2026-03-03T07:15:00Z",
   },
 ]
 
@@ -414,10 +607,10 @@ export const mockThreads: MockThread[] = [
     lastMessageAt: "2026-02-28T18:30:00Z",
     unreadCount: 1,
     messages: [
-      { id: "m-1", bookingId: "b-1", senderId: "u-guest-1", senderName: "Nadia Rahman", content: "Hi, I'll be arriving around 6 PM. Will someone be at the gate?", readAt: "2026-02-28T16:00:00Z", createdAt: "2026-02-28T15:30:00Z" },
-      { id: "m-2", bookingId: "b-1", senderId: "u-op-1", senderName: "Shanti Neer Staff", content: "Welcome! Yes, our caretaker Rina will be at the gate from 2 PM onwards. Please call the front desk when you're 30 minutes away.", readAt: "2026-02-28T17:00:00Z", createdAt: "2026-02-28T16:00:00Z" },
-      { id: "m-3", bookingId: "b-1", senderId: "u-guest-1", senderName: "Nadia Rahman", content: "That's great, thank you! Is there parking available?", readAt: "2026-02-28T18:30:00Z", createdAt: "2026-02-28T17:30:00Z" },
-      { id: "m-4", bookingId: "b-1", senderId: "u-op-1", senderName: "Shanti Neer Staff", content: "We'll keep the gate open for you. Safe travels!", readAt: null, createdAt: "2026-02-28T18:30:00Z" },
+      { id: "m-1", bookingId: "b-1", senderId: "u-guest-1", senderName: "Nadia Rahman", content: "Hi, I'll be arriving around 6 PM. Will someone be at the gate?", type: "text", readAt: "2026-02-28T16:00:00Z", createdAt: "2026-02-28T15:30:00Z" },
+      { id: "m-2", bookingId: "b-1", senderId: "u-op-1", senderName: "Shanti Neer Staff", content: "Welcome! Yes, our caretaker Rina will be at the gate from 2 PM onwards. Please call the front desk when you're 30 minutes away.", type: "text", readAt: "2026-02-28T17:00:00Z", createdAt: "2026-02-28T16:00:00Z" },
+      { id: "m-3", bookingId: "b-1", senderId: "u-guest-1", senderName: "Nadia Rahman", content: "That's great, thank you! Is there parking available?", type: "text", readAt: "2026-02-28T18:30:00Z", createdAt: "2026-02-28T17:30:00Z" },
+      { id: "m-4", bookingId: "b-1", senderId: "u-op-1", senderName: "Shanti Neer Staff", content: "We'll keep the gate open for you. Safe travels!", type: "text", readAt: null, createdAt: "2026-02-28T18:30:00Z" },
     ],
   },
   {
@@ -429,9 +622,9 @@ export const mockThreads: MockThread[] = [
     lastMessageAt: "2026-01-19T10:00:00Z",
     unreadCount: 0,
     messages: [
-      { id: "m-5", bookingId: "b-5", senderId: "u-guest-1", senderName: "Nadia Rahman", content: "Hello, can you arrange the mangrove tour for the 16th?", readAt: "2026-01-14T10:00:00Z", createdAt: "2026-01-14T09:00:00Z" },
-      { id: "m-6", bookingId: "b-5", senderId: "u-op-1", senderName: "Climate Centre Staff", content: "Absolutely! Our guide Ratan will take you at 7 AM. Wear long sleeves and bring insect repellent.", readAt: "2026-01-14T12:00:00Z", createdAt: "2026-01-14T10:30:00Z" },
-      { id: "m-7", bookingId: "b-5", senderId: "u-op-1", senderName: "Climate Centre Staff", content: "Thank you for staying with us! Your impact certificate is ready.", readAt: "2026-01-19T12:00:00Z", createdAt: "2026-01-19T10:00:00Z" },
+      { id: "m-5", bookingId: "b-5", senderId: "u-guest-1", senderName: "Nadia Rahman", content: "Hello, can you arrange the mangrove tour for the 16th?", type: "text", readAt: "2026-01-14T10:00:00Z", createdAt: "2026-01-14T09:00:00Z" },
+      { id: "m-6", bookingId: "b-5", senderId: "u-op-1", senderName: "Climate Centre Staff", content: "Absolutely! Our guide Ratan will take you at 7 AM. Wear long sleeves and bring insect repellent.", type: "text", readAt: "2026-01-14T12:00:00Z", createdAt: "2026-01-14T10:30:00Z" },
+      { id: "m-7", bookingId: "b-5", senderId: "u-op-1", senderName: "Climate Centre Staff", content: "Thank you for staying with us! Your impact certificate is ready.", type: "text", readAt: "2026-01-19T12:00:00Z", createdAt: "2026-01-19T10:00:00Z" },
     ],
   },
   {
@@ -443,7 +636,130 @@ export const mockThreads: MockThread[] = [
     lastMessageAt: "2026-02-28T20:00:00Z",
     unreadCount: 0,
     messages: [
-      { id: "m-8", bookingId: "b-3", senderId: "u-op-1", senderName: "Alor Path Staff", content: "Your room is ready. See you soon!", readAt: "2026-02-28T21:00:00Z", createdAt: "2026-02-28T20:00:00Z" },
+      { id: "m-8", bookingId: "b-3", senderId: "u-op-1", senderName: "Alor Path Staff", content: "Your room is ready. See you soon!", type: "text", readAt: "2026-02-28T21:00:00Z", createdAt: "2026-02-28T20:00:00Z" },
+    ],
+  },
+  {
+    id: "t-4",
+    bookingId: "b-9",
+    facilityName: "Shanti Neer Guesthouse",
+    facilityImage: "https://images.unsplash.com/photo-1590490360182-c33d57733427?auto=format&fit=crop&q=80&w=100",
+    lastMessage: "New booking request from Nadia Rahman",
+    lastMessageAt: "2026-03-02T09:00:00Z",
+    unreadCount: 1,
+    messages: [
+      {
+        id: "m-9",
+        bookingId: "b-9",
+        senderId: "system",
+        senderName: "Dhara Platform",
+        content: "New Booking Request: Nadia Rahman has requested Standard Double from Apr 10 – Apr 13 (3 nights, 2 guests). Total: ৳6,062.",
+        type: "booking_request",
+        bookingRequestData: {
+          bookingId: "b-9",
+          guestName: "Nadia Rahman",
+          roomName: "Standard Double",
+          checkinDate: "2026-04-10",
+          checkoutDate: "2026-04-13",
+          guestCount: 2,
+          totalAmount: 6062,
+          status: "pending",
+        },
+        readAt: null,
+        createdAt: "2026-03-02T09:00:00Z",
+      },
+    ],
+  },
+  {
+    id: "t-5",
+    bookingId: "b-10",
+    facilityName: "Grameen Training Centre",
+    facilityImage: "https://images.unsplash.com/photo-1587061949409-02df41d5e562?auto=format&fit=crop&q=80&w=100",
+    lastMessage: "New booking request from Arif Khan",
+    lastMessageAt: "2026-03-02T14:30:00Z",
+    unreadCount: 1,
+    messages: [
+      {
+        id: "m-10",
+        bookingId: "b-10",
+        senderId: "system",
+        senderName: "Dhara Platform",
+        content: "New Booking Request: Arif Khan has requested Private Double from Mar 20 – Mar 23 (3 nights, 2 guests). Total: ৳4,781.",
+        type: "booking_request",
+        bookingRequestData: {
+          bookingId: "b-10",
+          guestName: "Arif Khan",
+          roomName: "Private Double",
+          checkinDate: "2026-03-20",
+          checkoutDate: "2026-03-23",
+          guestCount: 2,
+          totalAmount: 4781,
+          status: "pending",
+        },
+        readAt: null,
+        createdAt: "2026-03-02T14:30:00Z",
+      },
+      {
+        id: "m-11",
+        bookingId: "b-10",
+        senderId: "u-guest-2",
+        senderName: "Arif Khan",
+        content: "Hi, we are two researchers attending a conference in Barisal. Is the WiFi reliable enough for video calls?",
+        type: "text",
+        readAt: null,
+        createdAt: "2026-03-02T14:35:00Z",
+      },
+    ],
+  },
+  {
+    id: "t-6",
+    bookingId: "b-11",
+    facilityName: "Coastal Climate Centre",
+    facilityImage: "https://images.unsplash.com/photo-1501785888041-af3ef285b470?auto=format&fit=crop&q=80&w=100",
+    lastMessage: "New booking request from Sabrina Chowdhury",
+    lastMessageAt: "2026-03-03T07:15:00Z",
+    unreadCount: 1,
+    messages: [
+      {
+        id: "m-12",
+        bookingId: "b-11",
+        senderId: "system",
+        senderName: "Dhara Platform",
+        content: "New Booking Request: Sabrina Chowdhury has requested Eco Lodge Double from Mar 25 – Mar 28 (3 nights, 1 guest). Total: ৳7,142.",
+        type: "booking_request",
+        bookingRequestData: {
+          bookingId: "b-11",
+          guestName: "Sabrina Chowdhury",
+          roomName: "Eco Lodge Double",
+          checkinDate: "2026-03-25",
+          checkoutDate: "2026-03-28",
+          guestCount: 1,
+          totalAmount: 7142,
+          status: "pending",
+        },
+        readAt: null,
+        createdAt: "2026-03-03T07:15:00Z",
+      },
+      {
+        id: "m-13",
+        bookingId: "b-11",
+        senderId: "u-guest-3",
+        senderName: "Sabrina Chowdhury",
+        content: "Hello! I'm a solo traveler interested in the Sundarbans. Can you help arrange a boat tour during my stay?",
+        type: "text",
+        readAt: null,
+        createdAt: "2026-03-03T07:20:00Z",
+      },
+      {
+        id: "m-14",
+        bookingId: "b-11",
+        senderId: "u-guest-3",
+        senderName: "Sabrina Chowdhury",
+        content: "Also, is insect repellent available at the centre or should I bring my own?",
+        type: "text",
+        readAt: null,
+        createdAt: "2026-03-03T07:22:00Z",
+      },
     ],
   },
 ]
@@ -489,6 +805,8 @@ export const mockFacilities: Facility[] = [
       { url: "https://images.unsplash.com/photo-1550581190-9c1c48d21d6c?auto=format&fit=crop&q=80&w=800", alt: "Garden" }
     ],
     priceFrom: 1500,
+    rating: 4.6,
+    reviewCount: 23,
     safetyTags: ["women-safe", "gated", "verified"],
     impactLine: "Funds women's skills training",
     impactStory: "100% of proceeds from your stay go directly to the Shanti Neer Artisan Collective, which provides vocational training to marginalized women in rural Sylhet.",
@@ -526,6 +844,8 @@ export const mockFacilities: Facility[] = [
       { url: "https://images.unsplash.com/photo-1517248135467-4c7edcad34c4?auto=format&fit=crop&q=80&w=800", alt: "Conference room" }
     ],
     priceFrom: 500,
+    rating: 4.2,
+    reviewCount: 15,
     safetyTags: ["security", "verified"],
     impactLine: "Supports local farmers' co-op",
     impactStory: "Your booking helps maintain our agricultural training facilities, which provide free education on sustainable farming practices to over 500 local farmers annually.",
@@ -560,6 +880,8 @@ export const mockFacilities: Facility[] = [
       { url: "https://images.unsplash.com/photo-1505691938895-1758d7feb511?auto=format&fit=crop&q=80&w=800", alt: "Single room" }
     ],
     priceFrom: 1200,
+    rating: 4.9,
+    reviewCount: 31,
     safetyTags: ["women-safe", "gated", "security", "verified"],
     impactLine: "Funds girl child education",
     impactStory: "Earnings from the transit home fund our primary school for underprivileged girls in the char regions of Rajshahi.",
@@ -594,6 +916,8 @@ export const mockFacilities: Facility[] = [
       { url: "https://images.unsplash.com/photo-1499955085172-a104c9463ece?auto=format&fit=crop&q=80&w=800", alt: "Room view" }
     ],
     priceFrom: 1800,
+    rating: 4.4,
+    reviewCount: 9,
     safetyTags: ["gated", "verified"],
     impactLine: "Funds mangrove conservation",
     impactStory: "Your stay directly supports our local mangrove replanting initiatives and provides alternative livelihoods for coastal communities.",
@@ -627,6 +951,8 @@ export const mockFacilities: Facility[] = [
       { url: "https://images.unsplash.com/photo-1510798831971-661eb04b3739?auto=format&fit=crop&q=80&w=800", alt: "Lodge exterior" }
     ],
     priceFrom: 2000,
+    rating: 4.7,
+    reviewCount: 18,
     safetyTags: ["security", "verified"],
     impactLine: "Supports indigenous artisans",
     impactStory: "The lodge provides sustainable income to 12 indigenous families and funds a local health clinic.",
@@ -660,6 +986,8 @@ export const mockFacilities: Facility[] = [
       { url: "https://images.unsplash.com/photo-1560448204-e02f11c3d0e2?auto=format&fit=crop&q=80&w=800", alt: "Lobby" }
     ],
     priceFrom: 2500,
+    rating: 4.3,
+    reviewCount: 12,
     safetyTags: ["security", "gated", "verified"],
     impactLine: "Funds urban youth programs",
     impactStory: "Profits fund our youth IT training centers located in Dhaka's informal settlements.",
@@ -679,4 +1007,182 @@ export const mockFacilities: Facility[] = [
       { id: "r-6-2", name: "Executive Double", type: "double", capacity: 2, price_partner: 3000, price_public: 3500, price_corporate: 3500, meal_addon_price: 500, is_active: true }
     ]
   }
+]
+
+// ── Reviews ─────────────────────────────────────────────────────────────────
+
+export const mockFacilityReviews: MockReview[] = [
+  {
+    id: "rev-f-1",
+    reviewerId: "u-guest-1",
+    reviewerName: "Nadia Rahman",
+    targetType: "facility",
+    targetId: "f-1",
+    rating: 5,
+    comment: "Beautiful guesthouse with incredibly warm hospitality. The home-cooked meals were the highlight — felt like visiting family. Highly recommend for solo female travelers.",
+    createdAt: "2026-01-15T10:00:00Z",
+  },
+  {
+    id: "rev-f-2",
+    reviewerId: "u-guest-2",
+    reviewerName: "Arif Khan",
+    targetType: "facility",
+    targetId: "f-1",
+    rating: 4,
+    comment: "Quiet and peaceful, perfect for a weekend getaway. WiFi was a bit slow but the garden area makes up for it.",
+    createdAt: "2026-01-22T08:30:00Z",
+  },
+  {
+    id: "rev-f-3",
+    reviewerId: "u-guest-3",
+    reviewerName: "Sabrina Chowdhury",
+    targetType: "facility",
+    targetId: "f-1",
+    rating: 5,
+    comment: "Knowing that my stay directly supports women's training made it so much more meaningful. The room was clean and comfortable.",
+    createdAt: "2026-02-03T14:15:00Z",
+  },
+  {
+    id: "rev-f-4",
+    reviewerId: "u-guest-1",
+    reviewerName: "Nadia Rahman",
+    targetType: "facility",
+    targetId: "f-2",
+    rating: 4,
+    comment: "Great value for budget travelers. Dorm was clean and well-maintained. Conference room is a nice bonus if you need a workspace.",
+    createdAt: "2026-02-10T09:00:00Z",
+  },
+  {
+    id: "rev-f-5",
+    reviewerId: "u-guest-2",
+    reviewerName: "Arif Khan",
+    targetType: "facility",
+    targetId: "f-2",
+    rating: 4,
+    comment: "Simple but functional. Staff were helpful and the location is convenient. Would stay again.",
+    createdAt: "2026-02-14T11:20:00Z",
+  },
+  {
+    id: "rev-f-6",
+    reviewerId: "u-guest-3",
+    reviewerName: "Sabrina Chowdhury",
+    targetType: "facility",
+    targetId: "f-3",
+    rating: 5,
+    comment: "Absolutely stunning facility. The women's safety measures made me feel completely at ease. Best experience in Cox's Bazar!",
+    createdAt: "2026-01-28T16:00:00Z",
+  },
+  {
+    id: "rev-f-7",
+    reviewerId: "u-guest-1",
+    reviewerName: "Nadia Rahman",
+    targetType: "facility",
+    targetId: "f-3",
+    rating: 5,
+    comment: "The ocean view dorm is worth every taka. Meals were delicious and the community vibe is unbeatable. Already planning my next visit.",
+    createdAt: "2026-02-18T13:45:00Z",
+  },
+  {
+    id: "rev-f-8",
+    reviewerId: "u-guest-2",
+    reviewerName: "Arif Khan",
+    targetType: "facility",
+    targetId: "f-4",
+    rating: 4,
+    comment: "Unique heritage feel with modern amenities. The courtyard is perfect for relaxing after a day of exploring Rajshahi.",
+    createdAt: "2026-02-05T10:30:00Z",
+  },
+  {
+    id: "rev-f-9",
+    reviewerId: "u-guest-1",
+    reviewerName: "Nadia Rahman",
+    targetType: "facility",
+    targetId: "f-5",
+    rating: 5,
+    comment: "Amazing nature experience! Woke up to bird songs and had the most relaxing weekend. The eco-friendly approach is commendable.",
+    createdAt: "2026-02-20T07:15:00Z",
+  },
+  {
+    id: "rev-f-10",
+    reviewerId: "u-guest-3",
+    reviewerName: "Sabrina Chowdhury",
+    targetType: "facility",
+    targetId: "f-6",
+    rating: 4,
+    comment: "Professional setup, great for business trips. Room was spacious and the underground parking is very convenient in Dhaka.",
+    createdAt: "2026-02-25T15:00:00Z",
+  },
+]
+
+export const mockGuestReviews: MockReview[] = [
+  {
+    id: "rev-g-1",
+    reviewerId: "u-op-1",
+    reviewerName: "Kamal Hossain",
+    targetType: "guest",
+    targetId: "u-guest-1",
+    rating: 5,
+    comment: "Nadia was an exceptional guest — very respectful of house rules, left the room spotless, and even thanked the kitchen staff personally.",
+    createdAt: "2026-01-18T09:00:00Z",
+  },
+  {
+    id: "rev-g-2",
+    reviewerId: "u-op-1",
+    reviewerName: "Kamal Hossain",
+    targetType: "guest",
+    targetId: "u-guest-1",
+    rating: 5,
+    comment: "Returning guest — always a pleasure to host. Punctual check-in, friendly, and considerate of other guests.",
+    createdAt: "2026-02-12T09:00:00Z",
+  },
+  {
+    id: "rev-g-3",
+    reviewerId: "u-op-1",
+    reviewerName: "Kamal Hossain",
+    targetType: "guest",
+    targetId: "u-guest-1",
+    rating: 5,
+    comment: "Third visit! Nadia is the kind of guest every facility hopes for. Warm and respectful.",
+    createdAt: "2026-02-22T09:00:00Z",
+  },
+  {
+    id: "rev-g-4",
+    reviewerId: "u-op-1",
+    reviewerName: "Kamal Hossain",
+    targetType: "guest",
+    targetId: "u-guest-1",
+    rating: 4,
+    comment: "Good guest overall. Checked out a little late but communicated in advance. No issues.",
+    createdAt: "2026-02-28T09:00:00Z",
+  },
+  {
+    id: "rev-g-5",
+    reviewerId: "u-op-1",
+    reviewerName: "Kamal Hossain",
+    targetType: "guest",
+    targetId: "u-guest-2",
+    rating: 4,
+    comment: "Arif was a quiet and easy-going guest. Kept to himself, room was clean on checkout.",
+    createdAt: "2026-02-15T09:00:00Z",
+  },
+  {
+    id: "rev-g-6",
+    reviewerId: "u-op-1",
+    reviewerName: "Kamal Hossain",
+    targetType: "guest",
+    targetId: "u-guest-2",
+    rating: 5,
+    comment: "Great communication throughout. Arif asked about local food spots — always appreciate curious travelers.",
+    createdAt: "2026-02-24T09:00:00Z",
+  },
+  {
+    id: "rev-g-7",
+    reviewerId: "u-op-1",
+    reviewerName: "Kamal Hossain",
+    targetType: "guest",
+    targetId: "u-guest-3",
+    rating: 5,
+    comment: "Sabrina was wonderful. Friendly, tidy, and even left a kind note for our team. Would love to host again.",
+    createdAt: "2026-02-01T09:00:00Z",
+  },
 ]

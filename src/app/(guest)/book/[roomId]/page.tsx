@@ -6,6 +6,7 @@ import { StepProgress } from "@/components/shared/step-progress"
 import { PriceBreakdown } from "@/components/shared/price-breakdown"
 import { PaymentMethodCard } from "@/components/shared/payment-method-card"
 import { ImpactLine } from "@/components/shared/impact-line"
+import { StarRating } from "@/components/shared/star-rating"
 import { Button } from "@/components/ui/button"
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
 import { Input } from "@/components/ui/input"
@@ -132,6 +133,7 @@ export default function BookingFlowPage({
               <div className="space-y-1">
                 <p className="text-sm text-muted-foreground">Facility</p>
                 <p className="font-medium">{facility.name}</p>
+                <StarRating rating={facility.rating} reviewCount={facility.reviewCount} size="sm" />
               </div>
               <div className="grid grid-cols-2 gap-4">
                 <div className="space-y-1">

@@ -1,16 +1,19 @@
 import { notFound } from "next/navigation"
 import { MapPin, Users, Wifi, Wind, Shield, CheckCircle2 } from "lucide-react"
 import { Metadata } from "next"
+import { format } from "date-fns"
 
-import { mockFacilities } from "@/lib/mock-data"
+import { mockFacilities, mockFacilityReviews } from "@/lib/mock-data"
 import { PublicHeader } from "@/components/layout/public-header"
 import { PublicFooter } from "@/components/layout/public-footer"
 import { PhotoGallery } from "@/components/shared/photo-gallery"
 import { SafetyBadge } from "@/components/shared/safety-badge"
 import { ImpactLine } from "@/components/shared/impact-line"
 import { SectionCard } from "@/components/layout/section-card"
+import { StarRating } from "@/components/shared/star-rating"
 import { BookingSidebar } from "./booking-sidebar"
 import { PriceDisplay } from "@/components/shared/price-display"
+import { Avatar, AvatarFallback } from "@/components/ui/avatar"
 
 type Props = {
   params: Promise<{ slug: string }>
@@ -55,9 +58,12 @@ export default async function PlaceDetailPage({ params }: Props) {
           
           <div className="mb-6">
             <h1 className="font-heading text-3xl font-bold tracking-tight md:text-4xl">{facility.name}</h1>
-            <div className="mt-2 flex items-center gap-2 text-muted-foreground">
-              <MapPin className="h-4 w-4" />
-              <span>{facility.location}</span>
+            <div className="mt-2 flex flex-wrap items-center gap-x-4 gap-y-1">
+              <div className="flex items-center gap-1.5 text-muted-foreground">
+                <MapPin className="h-4 w-4" />
+                <span>{facility.location}</span>
+              </div>
+              <StarRating rating={facility.rating} reviewCount={facility.reviewCount} size="md" />
             </div>
           </div>
 
@@ -134,6 +140,46 @@ export default async function PlaceDetailPage({ params }: Props) {
                   ))}
                 </div>
               </SectionCard>
+
+              {/* Reviews */}
+              {(() => {
+                const reviews = mockFacilityReviews.filter(r => r.targetId === facility.id)
+                if (reviews.length === 0) return null
+                return (
+                  <SectionCard
+                    title={
+                      <h3 className="font-heading text-xl font-semibold flex items-center gap-3">
+                        <span>Guest Reviews</span>
+                        <StarRating rating={facility.rating} reviewCount={facility.reviewCount} size="md" />
+                      </h3>
+                    }
+                  >
+                    <div className="space-y-6">
+                      {reviews.map((review) => (
+                        <div key={review.id} className="flex gap-3">
+                          <Avatar className="h-9 w-9 shrink-0">
+                            <AvatarFallback className="bg-primary/10 text-primary text-xs font-semibold">
+                              {review.reviewerName.split(" ").map(w => w[0]).join("").slice(0, 2).toUpperCase()}
+                            </AvatarFallback>
+                          </Avatar>
+                          <div className="min-w-0">
+                            <div className="flex flex-wrap items-center gap-2">
+                              <span className="text-sm font-semibold">{review.reviewerName}</span>
+                              <StarRating rating={review.rating} showCount={false} size="sm" />
+                            </div>
+                            <p className="mt-1 text-sm text-muted-foreground leading-relaxed">
+                              {review.comment}
+                            </p>
+                            <p className="mt-1 text-xs text-muted-foreground/60">
+                              {format(new Date(review.createdAt), "MMM d, yyyy")}
+                            </p>
+                          </div>
+                        </div>
+                      ))}
+                    </div>
+                  </SectionCard>
+                )
+              })()}
 
             </div>
 

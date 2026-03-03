@@ -13,7 +13,7 @@ const guestBookings = mockBookings.filter(
 )
 
 const upcomingBookings = guestBookings.filter(
-  (b) => b.status === "upcoming" || b.status === "checked_in",
+  (b) => b.status === "pending_approval" || b.status === "upcoming" || b.status === "checked_in",
 )
 const pastBookings = guestBookings.filter((b) => b.status === "completed")
 const cancelledBookings = guestBookings.filter((b) => b.status === "cancelled")
