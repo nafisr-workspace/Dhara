@@ -12,12 +12,14 @@ interface BookingRequestMessageProps {
   message: MockMessage
   onApprove: (bookingId: string) => void
   onDecline: (bookingId: string) => void
+  actionsDisabled?: boolean
 }
 
 export function BookingRequestMessage({
   message,
   onApprove,
   onDecline,
+  actionsDisabled,
 }: BookingRequestMessageProps) {
   const data = message.bookingRequestData
   if (!data) return null
@@ -68,6 +70,8 @@ export function BookingRequestMessage({
                 size="sm"
                 className="flex-1 bg-success text-white hover:bg-success/90"
                 onClick={() => onApprove(data.bookingId)}
+                disabled={actionsDisabled}
+                title={actionsDisabled ? "You don't have permission to perform this action" : undefined}
               >
                 <Check className="mr-1.5 h-3.5 w-3.5" />
                 Approve
@@ -77,6 +81,8 @@ export function BookingRequestMessage({
                 variant="outline"
                 className="flex-1 border-destructive/50 text-destructive hover:bg-destructive/10"
                 onClick={() => onDecline(data.bookingId)}
+                disabled={actionsDisabled}
+                title={actionsDisabled ? "You don't have permission to perform this action" : undefined}
               >
                 <X className="mr-1.5 h-3.5 w-3.5" />
                 Decline

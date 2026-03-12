@@ -13,9 +13,10 @@ import { getMockSession, logout, type MockSession } from "@/lib/mock-auth"
 export interface SidebarNavProps {
   items: { href: string; label: string; icon: React.ReactNode; badge?: number }[]
   title?: string
+  extraFooter?: React.ReactNode
 }
 
-export function SidebarNav({ items, title }: SidebarNavProps) {
+export function SidebarNav({ items, title, extraFooter }: SidebarNavProps) {
   const pathname = usePathname()
   const router = useRouter()
   const [session, setSession] = React.useState<MockSession | null>(null)
@@ -71,6 +72,10 @@ export function SidebarNav({ items, title }: SidebarNavProps) {
           )
         })}
       </nav>
+
+      {extraFooter && (
+        <div className="border-t px-3 py-3">{extraFooter}</div>
+      )}
 
       {session && (
         <div className="border-t p-3 space-y-2">

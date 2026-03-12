@@ -34,6 +34,7 @@ import {
   mockAvailabilityBlocks,
   mockBookings,
 } from "@/lib/mock-data"
+import { useStaffPermission } from "@/lib/utils/permissions"
 
 const WEEKDAYS = ["Sun", "Mon", "Tue", "Wed", "Thu", "Fri", "Sat"]
 
@@ -43,6 +44,7 @@ interface AvailabilityPageProps {
 
 export default function AvailabilityPage({ params }: AvailabilityPageProps) {
   const { id } = use(params)
+  const { canAct } = useStaffPermission("facilities")
   const facility = mockFacilities.find((f) => f.id === id)
 
   const [currentMonth, setCurrentMonth] = useState(new Date())
@@ -104,6 +106,7 @@ export default function AvailabilityPage({ params }: AvailabilityPageProps) {
   }
 
   function handleDayClick(day: Date) {
+    if (!canAct) return
     if (isPast(day) || isBlocked(day) || isBooked(day)) return
     alert(`Date ${format(day, "MMM d, yyyy")} blocked!`)
   }
@@ -218,7 +221,7 @@ export default function AvailabilityPage({ params }: AvailabilityPageProps) {
                 key={day.toISOString()}
                 type="button"
                 onClick={() => handleDayClick(day)}
-                disabled={past || blocked || booked}
+                disabled={past || blocked || booked || !canAct}
                 className={cn(
                   "relative border-b border-r p-2 text-left min-h-[72px] transition-colors",
                   past && "bg-muted text-muted-foreground",

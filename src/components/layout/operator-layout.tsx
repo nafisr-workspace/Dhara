@@ -15,11 +15,19 @@ import {
   Menu,
   Droplets,
   LogOut,
+  Eye,
 } from "lucide-react"
 
 import { cn } from "@/lib/utils"
 import { Button } from "@/components/ui/button"
 import { Avatar, AvatarFallback } from "@/components/ui/avatar"
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from "@/components/ui/select"
 import {
   Sheet,
   SheetContent,
@@ -27,8 +35,9 @@ import {
   SheetTrigger,
 } from "@/components/ui/sheet"
 import { SidebarNav } from "@/components/layout/sidebar-nav"
-import { getMockSession, logout, type MockSession } from "@/lib/mock-auth"
-import { mockThreads } from "@/lib/mock-data"
+import { getMockSession, logout, setActiveStaffId, getActiveStaffId, type MockSession } from "@/lib/mock-auth"
+import { mockThreads, mockOrganization } from "@/lib/mock-data"
+import { STAFF_SWITCH_EVENT } from "@/lib/utils/permissions"
 
 const pendingRequestCount = mockThreads.filter((t) =>
   t.messages.some(
@@ -151,10 +160,56 @@ function MobileTopBar() {
   )
 }
 
+function StaffSwitcher({ className }: { className?: string }) {
+  const [activeId, setActiveId] = React.useState<string>("")
+
+  React.useEffect(() => {
+    setActiveId(getActiveStaffId() ?? mockOrganization.staff[0]?.id ?? "")
+  }, [])
+
+  function handleChange(staffId: string) {
+    setActiveId(staffId)
+    setActiveStaffId(staffId)
+    window.dispatchEvent(new CustomEvent(STAFF_SWITCH_EVENT))
+  }
+
+  const activeMember = mockOrganization.staff.find((s) => s.id === activeId)
+
+  return (
+    <div className={cn("rounded-md border border-dashed border-muted-foreground/30 bg-muted/30 p-3 space-y-2", className)}>
+      <div className="flex items-center gap-1.5 text-[11px] font-medium uppercase tracking-wider text-muted-foreground">
+        <Eye className="h-3 w-3" />
+        View as Staff
+      </div>
+      <Select value={activeId} onValueChange={handleChange}>
+        <SelectTrigger className="h-8 text-xs">
+          <SelectValue placeholder="Select staff" />
+        </SelectTrigger>
+        <SelectContent>
+          {mockOrganization.staff.map((s) => (
+            <SelectItem key={s.id} value={s.id} className="text-xs">
+              {s.name} ({s.role})
+            </SelectItem>
+          ))}
+        </SelectContent>
+      </Select>
+      {activeMember && (
+        <p className="text-[10px] text-muted-foreground">
+          Role: <span className="capitalize font-medium">{activeMember.role}</span>
+          {" · "}
+          {activeMember.pageAccess.length === 8
+            ? "All pages"
+            : `${activeMember.pageAccess.length} pages`}
+        </p>
+      )}
+    </div>
+  )
+}
+
 export function OperatorLayout({ children }: { children: React.ReactNode }) {
   return (
     <div className="min-h-screen bg-background">
-      <SidebarNav items={navItems} />
+      <SidebarNav items={navItems} extraFooter={<StaffSwitcher />} />
       <MobileTopBar />
       <main className="md:pl-64">
         <div className="container mx-auto px-4 py-6 md:px-8 md:py-8">

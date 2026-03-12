@@ -22,6 +22,7 @@ import { format } from "date-fns"
 import { Send, MessageSquare } from "lucide-react"
 import { cn } from "@/lib/utils"
 import { toast } from "sonner"
+import { useStaffPermission } from "@/lib/utils/permissions"
 
 function getInitials(name: string): string {
   return name
@@ -60,6 +61,7 @@ function hasPendingRequest(thread: MockThread): boolean {
 }
 
 function OperatorMessagesContent() {
+  const { canAct } = useStaffPermission("messages")
   const searchParams = useSearchParams()
   const bookingParam = searchParams.get("booking")
 
@@ -340,6 +342,7 @@ function OperatorMessagesContent() {
                             message={msg}
                             onApprove={handleApprove}
                             onDecline={handleDecline}
+                            actionsDisabled={!canAct}
                           />
                         )
                       }
@@ -413,7 +416,8 @@ function OperatorMessagesContent() {
                   <Button
                     size="icon"
                     onClick={handleSend}
-                    disabled={!messageInput.trim()}
+                    disabled={!messageInput.trim() || !canAct}
+                    title={!canAct ? "You don't have permission to perform this action" : undefined}
                   >
                     <Send className="h-4 w-4" />
                     <span className="sr-only">Send</span>

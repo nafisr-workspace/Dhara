@@ -2,7 +2,7 @@
 
 import { use, useState } from "react"
 import Link from "next/link"
-import { ArrowLeft, Plus } from "lucide-react"
+import { ArrowLeft, Plus, ImagePlus } from "lucide-react"
 
 import { PageHeader } from "@/components/layout/page-header"
 import { Button } from "@/components/ui/button"
@@ -25,6 +25,7 @@ import {
 import { EmptyState } from "@/components/shared/empty-state"
 import { RoomCardManage } from "@/components/shared/room-card-manage"
 import { mockFacilities } from "@/lib/mock-data"
+import { useStaffPermission } from "@/lib/utils/permissions"
 
 interface RoomManagementPageProps {
   params: Promise<{ id: string }>
@@ -32,6 +33,7 @@ interface RoomManagementPageProps {
 
 export default function RoomManagementPage({ params }: RoomManagementPageProps) {
   const { id } = use(params)
+  const { canAct } = useStaffPermission("facilities")
   const facility = mockFacilities.find((f) => f.id === id)
   const [dialogOpen, setDialogOpen] = useState(false)
 
@@ -70,7 +72,7 @@ export default function RoomManagementPage({ params }: RoomManagementPageProps) 
 
             <Dialog open={dialogOpen} onOpenChange={setDialogOpen}>
               <DialogTrigger asChild>
-                <Button>
+                <Button disabled={!canAct} title={!canAct ? "You don't have permission to perform this action" : undefined}>
                   <Plus className="mr-2 h-4 w-4" />
                   Add Room
                 </Button>
@@ -123,6 +125,27 @@ export default function RoomManagementPage({ params }: RoomManagementPageProps) 
                   <div className="space-y-2">
                     <Label htmlFor="meal_addon">Meal Addon Price</Label>
                     <Input id="meal_addon" type="number" min={0} placeholder="৳ per night (optional)" />
+                  </div>
+
+                  {/* Room Photos */}
+                  <div className="space-y-2">
+                    <Label>Room Photos</Label>
+                    <p className="text-xs text-muted-foreground">
+                      Add photos specific to this room. Guests will see these when browsing.
+                    </p>
+                    <div className="grid grid-cols-3 gap-2">
+                      {[1, 2, 3].map((slot) => (
+                        <button
+                          key={slot}
+                          type="button"
+                          className="flex aspect-square flex-col items-center justify-center gap-1.5 rounded-lg border-2 border-dashed border-muted-foreground/25 bg-muted/30 text-muted-foreground transition-colors hover:border-muted-foreground/50 hover:bg-muted/50"
+                        >
+                          <ImagePlus className="h-5 w-5" />
+                          <span className="text-[10px] font-medium">Upload</span>
+                        </button>
+                      ))}
+                    </div>
+                    <p className="text-[10px] text-muted-foreground">JPG, PNG, or WebP. Minimum 2 photos recommended.</p>
                   </div>
 
                   <div className="flex justify-end gap-2 pt-2">

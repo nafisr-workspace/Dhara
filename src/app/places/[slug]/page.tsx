@@ -1,5 +1,5 @@
 import { notFound } from "next/navigation"
-import { MapPin, Users, Wifi, Wind, Shield, CheckCircle2 } from "lucide-react"
+import { MapPin, Wifi, Wind, Shield, CheckCircle2 } from "lucide-react"
 import { Metadata } from "next"
 import { format } from "date-fns"
 
@@ -12,7 +12,7 @@ import { ImpactLine } from "@/components/shared/impact-line"
 import { SectionCard } from "@/components/layout/section-card"
 import { StarRating } from "@/components/shared/star-rating"
 import { BookingSidebar } from "./booking-sidebar"
-import { PriceDisplay } from "@/components/shared/price-display"
+import { RoomGalleryCard } from "@/components/shared/room-gallery-card"
 import { Avatar, AvatarFallback } from "@/components/ui/avatar"
 
 type Props = {
@@ -109,22 +109,8 @@ export default async function PlaceDetailPage({ params }: Props) {
               {/* Rooms */}
               <SectionCard title="Available Rooms">
                 <div className="space-y-4">
-                  {facility.rooms.map((room) => (
-                    <div key={room.id} className="flex flex-col sm:flex-row sm:items-center justify-between p-4 border rounded-lg">
-                      <div className="space-y-1 mb-4 sm:mb-0">
-                        <h4 className="font-semibold">{room.name}</h4>
-                        <div className="flex items-center text-sm text-muted-foreground">
-                          <Users className="mr-1 h-4 w-4" /> 
-                          Max {room.capacity} guests
-                        </div>
-                        <div className="text-sm text-muted-foreground capitalize">
-                          Type: {room.type}
-                        </div>
-                      </div>
-                      <div className="text-right">
-                        <PriceDisplay amount={room.price_public} period="/ night" />
-                      </div>
-                    </div>
+                  {facility.rooms.filter(r => r.is_active).map((room) => (
+                    <RoomGalleryCard key={room.id} room={room} />
                   ))}
                 </div>
               </SectionCard>

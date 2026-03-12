@@ -46,6 +46,7 @@ import {
 import { BlockDateDialog } from "@/components/shared/block-date-dialog"
 import { ManualBookingDialog } from "@/components/shared/manual-booking-dialog"
 import { toast } from "sonner"
+import { useStaffPermission } from "@/lib/utils/permissions"
 
 const WEEKDAYS = ["Sun", "Mon", "Tue", "Wed", "Thu", "Fri", "Sat"]
 
@@ -57,6 +58,7 @@ function isInRange(day: Date, start: Date | null, end: Date | null): boolean {
 }
 
 export default function CalendarPage() {
+  const { canAct } = useStaffPermission("calendar")
   const [selectedFacilityId, setSelectedFacilityId] = useState<string>(
     mockFacilities[0]?.id ?? ""
   )
@@ -390,11 +392,18 @@ export default function CalendarPage() {
               size="sm"
               variant="destructive"
               onClick={() => setBlockDialogOpen(true)}
+              disabled={!canAct}
+              title={!canAct ? "You don't have permission to perform this action" : undefined}
             >
               <Ban className="mr-1.5 h-3.5 w-3.5" />
               Block Dates
             </Button>
-            <Button size="sm" onClick={() => setManualBookingOpen(true)}>
+            <Button
+              size="sm"
+              onClick={() => setManualBookingOpen(true)}
+              disabled={!canAct}
+              title={!canAct ? "You don't have permission to perform this action" : undefined}
+            >
               <Plus className="mr-1.5 h-3.5 w-3.5" />
               Manual Booking
             </Button>

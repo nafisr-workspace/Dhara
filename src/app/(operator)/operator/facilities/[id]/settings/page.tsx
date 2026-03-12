@@ -35,6 +35,7 @@ import { PhotoUploader } from "@/components/shared/photo-uploader"
 import { EmptyState } from "@/components/shared/empty-state"
 import { cn } from "@/lib/utils"
 import { mockFacilities } from "@/lib/mock-data"
+import { useStaffPermission } from "@/lib/utils/permissions"
 
 const AMENITY_OPTIONS = [
   { id: "wifi", label: "WiFi" },
@@ -52,6 +53,7 @@ interface FacilitySettingsPageProps {
 
 export default function FacilitySettingsPage({ params }: FacilitySettingsPageProps) {
   const { id } = use(params)
+  const { canAct } = useStaffPermission("facilities")
   const facility = mockFacilities.find((f) => f.id === id)
 
   const [photos, setPhotos] = useState<string[]>(
@@ -308,7 +310,7 @@ export default function FacilitySettingsPage({ params }: FacilitySettingsPagePro
 
         {/* Save */}
         <div className="flex justify-end">
-          <Button type="submit" size="lg">
+          <Button type="submit" size="lg" disabled={!canAct} title={!canAct ? "You don't have permission to perform this action" : undefined}>
             <Save className="mr-2 h-4 w-4" />
             Save Changes
           </Button>
@@ -332,7 +334,7 @@ export default function FacilitySettingsPage({ params }: FacilitySettingsPagePro
               </div>
               <AlertDialog>
                 <AlertDialogTrigger asChild>
-                  <Button variant="destructive">Deactivate</Button>
+                  <Button variant="destructive" disabled={!canAct} title={!canAct ? "You don't have permission to perform this action" : undefined}>Deactivate</Button>
                 </AlertDialogTrigger>
                 <AlertDialogContent>
                   <AlertDialogHeader>

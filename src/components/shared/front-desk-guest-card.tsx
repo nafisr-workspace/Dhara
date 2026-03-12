@@ -46,6 +46,7 @@ export interface FrontDeskGuestCardProps {
   onAction: () => void
   onViewProfile: () => void
   onOpenChat: () => void
+  actionDisabled?: boolean
   className?: string
 }
 
@@ -65,6 +66,7 @@ export function FrontDeskGuestCard({
   onAction,
   onViewProfile,
   onOpenChat,
+  actionDisabled,
   className,
 }: FrontDeskGuestCardProps) {
   const isArrival = type === "arrival"
@@ -187,6 +189,8 @@ export function FrontDeskGuestCard({
                 "bg-accent text-accent-foreground hover:bg-accent/90": !isArrival,
               })}
               onClick={onAction}
+              disabled={actionDisabled}
+              title={actionDisabled ? "You don't have permission to perform this action" : undefined}
             >
               {isArrival ? (
                 <>

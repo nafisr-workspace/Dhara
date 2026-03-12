@@ -1,6 +1,8 @@
 "use client"
 
-import { Pencil, Users, UtensilsCrossed, Power, PowerOff } from "lucide-react"
+import * as React from "react"
+import Image from "next/image"
+import { Pencil, Users, UtensilsCrossed, Power, PowerOff, ImageIcon, ChevronLeft, ChevronRight } from "lucide-react"
 import { Card, CardContent } from "@/components/ui/card"
 import { Button } from "@/components/ui/button"
 import { Badge } from "@/components/ui/badge"
@@ -27,6 +29,10 @@ export function RoomCardManage({
   onToggleActive,
   className,
 }: RoomCardManageProps) {
+  const [photoIdx, setPhotoIdx] = React.useState(0)
+  const photos = room.photos
+  const hasPhotos = photos.length > 0
+
   return (
     <Card
       className={cn(
@@ -35,6 +41,49 @@ export function RoomCardManage({
         className,
       )}
     >
+      {/* Room photo carousel */}
+      <div className="relative aspect-[16/10] overflow-hidden bg-muted">
+        {hasPhotos ? (
+          <>
+            <Image
+              src={photos[photoIdx].url}
+              alt={photos[photoIdx].alt}
+              fill
+              className="object-cover"
+              sizes="(max-width: 640px) 100vw, (max-width: 1024px) 50vw, 33vw"
+            />
+            {photos.length > 1 && (
+              <>
+                <button
+                  type="button"
+                  className="absolute left-1.5 top-1/2 -translate-y-1/2 flex h-6 w-6 items-center justify-center rounded-full bg-black/40 text-white hover:bg-black/60"
+                  onClick={() => setPhotoIdx((prev) => (prev - 1 + photos.length) % photos.length)}
+                >
+                  <ChevronLeft className="h-3.5 w-3.5" />
+                </button>
+                <button
+                  type="button"
+                  className="absolute right-1.5 top-1/2 -translate-y-1/2 flex h-6 w-6 items-center justify-center rounded-full bg-black/40 text-white hover:bg-black/60"
+                  onClick={() => setPhotoIdx((prev) => (prev + 1) % photos.length)}
+                >
+                  <ChevronRight className="h-3.5 w-3.5" />
+                </button>
+                <span className="absolute bottom-1.5 right-1.5 rounded-full bg-black/50 px-2 py-0.5 text-[10px] font-medium text-white">
+                  {photoIdx + 1}/{photos.length}
+                </span>
+              </>
+            )}
+          </>
+        ) : (
+          <div className="flex h-full items-center justify-center">
+            <div className="text-center text-muted-foreground">
+              <ImageIcon className="mx-auto h-8 w-8 opacity-40" />
+              <p className="mt-1 text-xs">No photos</p>
+            </div>
+          </div>
+        )}
+      </div>
+
       <CardContent className="p-5">
         <div className="flex items-start justify-between gap-3">
           <div className="min-w-0">
@@ -52,6 +101,12 @@ export function RoomCardManage({
             <div className="mt-1 flex items-center gap-1.5 text-xs text-muted-foreground">
               <Users className="h-3.5 w-3.5" />
               <span>Capacity: {room.capacity}</span>
+              {hasPhotos && (
+                <>
+                  <span className="text-muted-foreground/40">·</span>
+                  <span>{photos.length} photo{photos.length !== 1 ? "s" : ""}</span>
+                </>
+              )}
             </div>
           </div>
 

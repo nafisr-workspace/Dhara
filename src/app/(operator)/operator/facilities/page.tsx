@@ -1,3 +1,5 @@
+"use client"
+
 import Link from "next/link"
 import { Plus, MapPin, DoorOpen } from "lucide-react"
 
@@ -5,21 +7,31 @@ import { PageHeader } from "@/components/layout/page-header"
 import { Badge } from "@/components/ui/badge"
 import { Button } from "@/components/ui/button"
 import { mockFacilities } from "@/lib/mock-data"
+import { useStaffPermission } from "@/lib/utils/permissions"
 
 const operatorFacilities = mockFacilities.slice(0, 2)
 
 export default function FacilitiesListPage() {
+  const { canAct } = useStaffPermission("facilities")
+
   return (
     <div className="space-y-8">
       <PageHeader
         title="Your Facilities"
         description="Manage your listed facilities"
         actions={
-          <Button asChild>
-            <Link href="/operator/facilities/new">
-              <Plus className="mr-2 h-4 w-4" />
-              Add New Facility
-            </Link>
+          <Button asChild={canAct} disabled={!canAct} title={!canAct ? "You don't have permission to perform this action" : undefined}>
+            {canAct ? (
+              <Link href="/operator/facilities/new">
+                <Plus className="mr-2 h-4 w-4" />
+                Add New Facility
+              </Link>
+            ) : (
+              <>
+                <Plus className="mr-2 h-4 w-4" />
+                Add New Facility
+              </>
+            )}
           </Button>
         }
       />

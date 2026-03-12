@@ -1,5 +1,10 @@
 import { type SafetyBadgeType } from "@/components/shared/safety-badge"
 
+export type RoomPhoto = {
+  url: string
+  alt: string
+}
+
 export type Room = {
   id: string
   name: string
@@ -10,6 +15,7 @@ export type Room = {
   price_corporate: number
   meal_addon_price: number
   is_active: boolean
+  photos: RoomPhoto[]
 }
 
 export type Facility = {
@@ -147,6 +153,39 @@ export type MockUserProfile = {
   reviewCount: number
 }
 
+export type StaffRole = "admin" | "caretaker" | "staff"
+
+export type OperatorPageId =
+  | "front_desk"
+  | "dashboard"
+  | "facilities"
+  | "calendar"
+  | "bookings"
+  | "earnings"
+  | "messages"
+  | "profile"
+
+export type StaffMember = {
+  id: string
+  name: string
+  email: string
+  phone: string
+  role: StaffRole
+  pageAccess: OperatorPageId[]
+}
+
+export type VerificationDocStatus = "not_uploaded" | "uploaded" | "verified" | "rejected"
+
+export type VerificationDocument = {
+  id: string
+  label: string
+  description: string
+  status: VerificationDocStatus
+  fileName: string | null
+  uploadedAt: string | null
+  rejectionReason: string | null
+}
+
 export type MockOrganization = {
   id: string
   ownerId: string
@@ -155,7 +194,10 @@ export type MockOrganization = {
   contactEmail: string
   bankAccountMasked: string
   status: "pending" | "approved" | "paused"
-  staff: { name: string; role: string; email: string }[]
+  verificationStatus: "pending_documents" | "under_review" | "verified" | "rejected"
+  verificationDocuments: VerificationDocument[]
+  termsAcceptedAt: string | null
+  staff: StaffMember[]
 }
 
 export type AvailabilityBlock = {
@@ -269,6 +311,49 @@ export const mockOperatorProfile: MockUserProfile = {
   reviewCount: 18,
 }
 
+export const REQUIRED_VERIFICATION_DOCUMENTS: Omit<VerificationDocument, "id">[] = [
+  {
+    label: "NGO Registration Certificate",
+    description: "Government-issued registration certificate for your organization (NGOAB, DSS, or Joint Stock)",
+    status: "not_uploaded",
+    fileName: null,
+    uploadedAt: null,
+    rejectionReason: null,
+  },
+  {
+    label: "TIN Certificate",
+    description: "Tax Identification Number certificate issued by NBR",
+    status: "not_uploaded",
+    fileName: null,
+    uploadedAt: null,
+    rejectionReason: null,
+  },
+  {
+    label: "Organization Constitution / Bylaws",
+    description: "Memorandum of Association, Articles, or governing bylaws",
+    status: "not_uploaded",
+    fileName: null,
+    uploadedAt: null,
+    rejectionReason: null,
+  },
+  {
+    label: "Authorized Signatory NID",
+    description: "National ID of the person authorized to manage this account",
+    status: "not_uploaded",
+    fileName: null,
+    uploadedAt: null,
+    rejectionReason: null,
+  },
+  {
+    label: "Facility Ownership / Lease Document",
+    description: "Proof of ownership or lease agreement for the facility you want to list",
+    status: "not_uploaded",
+    fileName: null,
+    uploadedAt: null,
+    rejectionReason: null,
+  },
+]
+
 export const mockOrganization: MockOrganization = {
   id: "org-1",
   ownerId: "u-op-1",
@@ -277,10 +362,80 @@ export const mockOrganization: MockOrganization = {
   contactEmail: "info@shantineer.org",
   bankAccountMasked: "****4567",
   status: "approved",
+  verificationStatus: "verified",
+  termsAcceptedAt: "2025-11-15T10:30:00Z",
+  verificationDocuments: [
+    {
+      id: "doc-1",
+      label: "NGO Registration Certificate",
+      description: "Government-issued registration certificate for your organization (NGOAB, DSS, or Joint Stock)",
+      status: "verified",
+      fileName: "shantineer_registration.pdf",
+      uploadedAt: "2025-11-15T10:30:00Z",
+      rejectionReason: null,
+    },
+    {
+      id: "doc-2",
+      label: "TIN Certificate",
+      description: "Tax Identification Number certificate issued by NBR",
+      status: "verified",
+      fileName: "tin_certificate.pdf",
+      uploadedAt: "2025-11-15T10:32:00Z",
+      rejectionReason: null,
+    },
+    {
+      id: "doc-3",
+      label: "Organization Constitution / Bylaws",
+      description: "Memorandum of Association, Articles, or governing bylaws",
+      status: "verified",
+      fileName: "constitution_bylaws.pdf",
+      uploadedAt: "2025-11-15T10:34:00Z",
+      rejectionReason: null,
+    },
+    {
+      id: "doc-4",
+      label: "Authorized Signatory NID",
+      description: "National ID of the person authorized to manage this account",
+      status: "verified",
+      fileName: "kamal_nid_scan.pdf",
+      uploadedAt: "2025-11-15T10:36:00Z",
+      rejectionReason: null,
+    },
+    {
+      id: "doc-5",
+      label: "Facility Ownership / Lease Document",
+      description: "Proof of ownership or lease agreement for the facility you want to list",
+      status: "verified",
+      fileName: "lease_agreement.pdf",
+      uploadedAt: "2025-11-16T09:00:00Z",
+      rejectionReason: null,
+    },
+  ],
   staff: [
-    { name: "Kamal Hossain", role: "Admin", email: "kamal@shantineer.org" },
-    { name: "Rina Begum", role: "Caretaker", email: "rina@shantineer.org" },
-    { name: "Tanvir Ahmed", role: "Staff", email: "tanvir@shantineer.org" },
+    {
+      id: "staff-1",
+      name: "Kamal Hossain",
+      email: "kamal@shantineer.org",
+      phone: "+880 1911 222333",
+      role: "admin",
+      pageAccess: ["front_desk", "dashboard", "facilities", "calendar", "bookings", "earnings", "messages", "profile"],
+    },
+    {
+      id: "staff-2",
+      name: "Rina Begum",
+      email: "rina@shantineer.org",
+      phone: "+880 1712 998877",
+      role: "caretaker",
+      pageAccess: ["front_desk", "calendar", "bookings", "messages"],
+    },
+    {
+      id: "staff-3",
+      name: "Tanvir Ahmed",
+      email: "tanvir@shantineer.org",
+      phone: "+880 1655 445566",
+      role: "staff",
+      pageAccess: ["front_desk"],
+    },
   ],
 }
 
@@ -827,9 +982,19 @@ export const mockFacilities: Facility[] = [
       { label: "Curfew", value: "Gate closes at 11:00 PM" }
     ],
     rooms: [
-      { id: "r-1-1", name: "Standard Double", type: "double", capacity: 2, price_partner: 1200, price_public: 1500, price_corporate: 1500, meal_addon_price: 400, is_active: true },
-      { id: "r-1-2", name: "Deluxe Twin", type: "double", capacity: 2, price_partner: 1500, price_public: 1800, price_corporate: 1800, meal_addon_price: 400, is_active: true },
-      { id: "r-1-3", name: "Solo Traveler Room", type: "single", capacity: 1, price_partner: 800, price_public: 1000, price_corporate: 1000, meal_addon_price: 400, is_active: true }
+      { id: "r-1-1", name: "Standard Double", type: "double", capacity: 2, price_partner: 1200, price_public: 1500, price_corporate: 1500, meal_addon_price: 400, is_active: true, photos: [
+        { url: "https://images.unsplash.com/photo-1611892440504-42a792e24d32?auto=format&fit=crop&q=80&w=800", alt: "Standard Double — bed area" },
+        { url: "https://images.unsplash.com/photo-1582719478250-c89cae4dc85b?auto=format&fit=crop&q=80&w=800", alt: "Standard Double — window view" },
+      ]},
+      { id: "r-1-2", name: "Deluxe Twin", type: "double", capacity: 2, price_partner: 1500, price_public: 1800, price_corporate: 1800, meal_addon_price: 400, is_active: true, photos: [
+        { url: "https://images.unsplash.com/photo-1631049307264-da0ec9d70304?auto=format&fit=crop&q=80&w=800", alt: "Deluxe Twin — beds" },
+        { url: "https://images.unsplash.com/photo-1595576508898-0ad5c879a061?auto=format&fit=crop&q=80&w=800", alt: "Deluxe Twin — bathroom" },
+        { url: "https://images.unsplash.com/photo-1584622650111-993a426fbf0a?auto=format&fit=crop&q=80&w=800", alt: "Deluxe Twin — seating area" },
+      ]},
+      { id: "r-1-3", name: "Solo Traveler Room", type: "single", capacity: 1, price_partner: 800, price_public: 1000, price_corporate: 1000, meal_addon_price: 400, is_active: true, photos: [
+        { url: "https://images.unsplash.com/photo-1540518614846-7eded433c457?auto=format&fit=crop&q=80&w=800", alt: "Solo Traveler Room — bed" },
+        { url: "https://images.unsplash.com/photo-1560185007-cde436f6a4d0?auto=format&fit=crop&q=80&w=800", alt: "Solo Traveler Room — desk" },
+      ]}
     ]
   },
   {
@@ -866,9 +1031,18 @@ export const mockFacilities: Facility[] = [
       { label: "Alcohol", value: "Strictly prohibited" }
     ],
     rooms: [
-      { id: "r-2-1", name: "6-Bed Dormitory", type: "dorm", capacity: 6, price_partner: 300, price_public: 500, price_corporate: 500, meal_addon_price: 300, is_active: true },
-      { id: "r-2-2", name: "Private Double", type: "double", capacity: 2, price_partner: 1000, price_public: 1200, price_corporate: 1500, meal_addon_price: 300, is_active: true },
-      { id: "r-2-3", name: "Main Hall", type: "hall", capacity: 50, price_partner: 4000, price_public: 5000, price_corporate: 8000, meal_addon_price: 0, is_active: true }
+      { id: "r-2-1", name: "6-Bed Dormitory", type: "dorm", capacity: 6, price_partner: 300, price_public: 500, price_corporate: 500, meal_addon_price: 300, is_active: true, photos: [
+        { url: "https://images.unsplash.com/photo-1555854877-bab0e564b8d5?auto=format&fit=crop&q=80&w=800", alt: "Dormitory — bunk beds" },
+        { url: "https://images.unsplash.com/photo-1596394516093-501ba68a0ba6?auto=format&fit=crop&q=80&w=800", alt: "Dormitory — common area" },
+      ]},
+      { id: "r-2-2", name: "Private Double", type: "double", capacity: 2, price_partner: 1000, price_public: 1200, price_corporate: 1500, meal_addon_price: 300, is_active: true, photos: [
+        { url: "https://images.unsplash.com/photo-1618773928121-c32242e63f39?auto=format&fit=crop&q=80&w=800", alt: "Private Double — bedroom" },
+        { url: "https://images.unsplash.com/photo-1564078516393-cf04bd966897?auto=format&fit=crop&q=80&w=800", alt: "Private Double — en-suite bath" },
+      ]},
+      { id: "r-2-3", name: "Main Hall", type: "hall", capacity: 50, price_partner: 4000, price_public: 5000, price_corporate: 8000, meal_addon_price: 0, is_active: true, photos: [
+        { url: "https://images.unsplash.com/photo-1517248135467-4c7edcad34c4?auto=format&fit=crop&q=80&w=800", alt: "Main Hall — conference setup" },
+        { url: "https://images.unsplash.com/photo-1497366216548-37526070297c?auto=format&fit=crop&q=80&w=800", alt: "Main Hall — classroom layout" },
+      ]}
     ]
   },
   {
@@ -904,9 +1078,19 @@ export const mockFacilities: Facility[] = [
       { label: "Guests", value: "Women and families only" }
     ],
     rooms: [
-      { id: "r-3-1", name: "Standard Single", type: "single", capacity: 1, price_partner: 1000, price_public: 1200, price_corporate: 1500, meal_addon_price: 350, is_active: true },
-      { id: "r-3-2", name: "Premium Single", type: "single", capacity: 1, price_partner: 1200, price_public: 1500, price_corporate: 1800, meal_addon_price: 350, is_active: true },
-      { id: "r-3-3", name: "Family Room", type: "double", capacity: 3, price_partner: 1800, price_public: 2200, price_corporate: 2500, meal_addon_price: 350, is_active: true }
+      { id: "r-3-1", name: "Standard Single", type: "single", capacity: 1, price_partner: 1000, price_public: 1200, price_corporate: 1500, meal_addon_price: 350, is_active: true, photos: [
+        { url: "https://images.unsplash.com/photo-1505693416388-ac5ce068fe85?auto=format&fit=crop&q=80&w=800", alt: "Standard Single — cozy bed" },
+        { url: "https://images.unsplash.com/photo-1522771739844-6a9f6d5f14af?auto=format&fit=crop&q=80&w=800", alt: "Standard Single — workspace" },
+      ]},
+      { id: "r-3-2", name: "Premium Single", type: "single", capacity: 1, price_partner: 1200, price_public: 1500, price_corporate: 1800, meal_addon_price: 350, is_active: true, photos: [
+        { url: "https://images.unsplash.com/photo-1590490360182-c33d57733427?auto=format&fit=crop&q=80&w=800", alt: "Premium Single — room view" },
+        { url: "https://images.unsplash.com/photo-1560185893-a55cbc8c57e8?auto=format&fit=crop&q=80&w=800", alt: "Premium Single — bathroom" },
+      ]},
+      { id: "r-3-3", name: "Family Room", type: "double", capacity: 3, price_partner: 1800, price_public: 2200, price_corporate: 2500, meal_addon_price: 350, is_active: true, photos: [
+        { url: "https://images.unsplash.com/photo-1566665797739-1674de7a421a?auto=format&fit=crop&q=80&w=800", alt: "Family Room — main bedroom" },
+        { url: "https://images.unsplash.com/photo-1560448204-e02f11c3d0e2?auto=format&fit=crop&q=80&w=800", alt: "Family Room — living area" },
+        { url: "https://images.unsplash.com/photo-1552321554-5fefe8c9ef14?auto=format&fit=crop&q=80&w=800", alt: "Family Room — balcony" },
+      ]}
     ]
   },
   {
@@ -942,8 +1126,13 @@ export const mockFacilities: Facility[] = [
       { label: "Eco-policy", value: "No single-use plastics allowed" }
     ],
     rooms: [
-      { id: "r-4-1", name: "Eco Lodge Double", type: "double", capacity: 2, price_partner: 1500, price_public: 1800, price_corporate: 2000, meal_addon_price: 500, is_active: true },
-      { id: "r-4-2", name: "Researcher Dorm", type: "dorm", capacity: 4, price_partner: 600, price_public: 800, price_corporate: 800, meal_addon_price: 500, is_active: true }
+      { id: "r-4-1", name: "Eco Lodge Double", type: "double", capacity: 2, price_partner: 1500, price_public: 1800, price_corporate: 2000, meal_addon_price: 500, is_active: true, photos: [
+        { url: "https://images.unsplash.com/photo-1499955085172-a104c9463ece?auto=format&fit=crop&q=80&w=800", alt: "Eco Lodge Double — room with nature view" },
+        { url: "https://images.unsplash.com/photo-1520250497591-112f2f40a3f4?auto=format&fit=crop&q=80&w=800", alt: "Eco Lodge Double — terrace" },
+      ]},
+      { id: "r-4-2", name: "Researcher Dorm", type: "dorm", capacity: 4, price_partner: 600, price_public: 800, price_corporate: 800, meal_addon_price: 500, is_active: true, photos: [
+        { url: "https://images.unsplash.com/photo-1555854877-bab0e564b8d5?auto=format&fit=crop&q=80&w=800", alt: "Researcher Dorm — beds" },
+      ]}
     ]
   },
   {
@@ -979,8 +1168,15 @@ export const mockFacilities: Facility[] = [
       { label: "Respect", value: "Respect local customs and photography rules" }
     ],
     rooms: [
-      { id: "r-5-1", name: "Valley View Twin", type: "double", capacity: 2, price_partner: 1600, price_public: 2000, price_corporate: 2500, meal_addon_price: 600, is_active: true },
-      { id: "r-5-2", name: "Family Cottage", type: "double", capacity: 4, price_partner: 3000, price_public: 3500, price_corporate: 4000, meal_addon_price: 600, is_active: true }
+      { id: "r-5-1", name: "Valley View Twin", type: "double", capacity: 2, price_partner: 1600, price_public: 2000, price_corporate: 2500, meal_addon_price: 600, is_active: true, photos: [
+        { url: "https://images.unsplash.com/photo-1510798831971-661eb04b3739?auto=format&fit=crop&q=80&w=800", alt: "Valley View Twin — room" },
+        { url: "https://images.unsplash.com/photo-1506905925346-21bda4d32df4?auto=format&fit=crop&q=80&w=800", alt: "Valley View Twin — hill view from window" },
+      ]},
+      { id: "r-5-2", name: "Family Cottage", type: "double", capacity: 4, price_partner: 3000, price_public: 3500, price_corporate: 4000, meal_addon_price: 600, is_active: true, photos: [
+        { url: "https://images.unsplash.com/photo-1587061949409-02df41d5e562?auto=format&fit=crop&q=80&w=800", alt: "Family Cottage — exterior" },
+        { url: "https://images.unsplash.com/photo-1566665797739-1674de7a421a?auto=format&fit=crop&q=80&w=800", alt: "Family Cottage — bedroom" },
+        { url: "https://images.unsplash.com/photo-1584622650111-993a426fbf0a?auto=format&fit=crop&q=80&w=800", alt: "Family Cottage — living space" },
+      ]}
     ]
   },
   {
@@ -1017,8 +1213,15 @@ export const mockFacilities: Facility[] = [
       { label: "Visitors", value: "No outside visitors in rooms" }
     ],
     rooms: [
-      { id: "r-6-1", name: "Corporate Single", type: "single", capacity: 1, price_partner: 2000, price_public: 2500, price_corporate: 2500, meal_addon_price: 500, is_active: true },
-      { id: "r-6-2", name: "Executive Double", type: "double", capacity: 2, price_partner: 3000, price_public: 3500, price_corporate: 3500, meal_addon_price: 500, is_active: true }
+      { id: "r-6-1", name: "Corporate Single", type: "single", capacity: 1, price_partner: 2000, price_public: 2500, price_corporate: 2500, meal_addon_price: 500, is_active: true, photos: [
+        { url: "https://images.unsplash.com/photo-1554995207-c18c203602cb?auto=format&fit=crop&q=80&w=800", alt: "Corporate Single — modern room" },
+        { url: "https://images.unsplash.com/photo-1560185007-cde436f6a4d0?auto=format&fit=crop&q=80&w=800", alt: "Corporate Single — work desk" },
+      ]},
+      { id: "r-6-2", name: "Executive Double", type: "double", capacity: 2, price_partner: 3000, price_public: 3500, price_corporate: 3500, meal_addon_price: 500, is_active: true, photos: [
+        { url: "https://images.unsplash.com/photo-1560448204-e02f11c3d0e2?auto=format&fit=crop&q=80&w=800", alt: "Executive Double — spacious room" },
+        { url: "https://images.unsplash.com/photo-1631049307264-da0ec9d70304?auto=format&fit=crop&q=80&w=800", alt: "Executive Double — bed" },
+        { url: "https://images.unsplash.com/photo-1595576508898-0ad5c879a061?auto=format&fit=crop&q=80&w=800", alt: "Executive Double — ensuite" },
+      ]}
     ]
   }
 ]

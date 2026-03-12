@@ -33,6 +33,7 @@ import {
 } from "@/lib/mock-data"
 import { format } from "date-fns"
 import { Search, Calendar } from "lucide-react"
+import { useStaffPermission } from "@/lib/utils/permissions"
 
 type GuestEntry = {
   id: string
@@ -111,6 +112,7 @@ function buildEntries(): { arrivals: GuestEntry[]; departures: GuestEntry[] } {
 
 export default function FrontDeskPage() {
   const router = useRouter()
+  const { canAct } = useStaffPermission("front_desk")
   const today = new Date()
   const [selectedFacility, setSelectedFacility] = useState<string>("all")
   const [searchQuery, setSearchQuery] = useState("")
@@ -268,6 +270,7 @@ export default function FrontDeskPage() {
                   onAction={() => openCheckin(guest)}
                   onViewProfile={() => handleViewProfile(guest)}
                   onOpenChat={() => handleOpenChat(guest)}
+                  actionDisabled={!canAct}
                 />
               ))
             )}
@@ -308,6 +311,7 @@ export default function FrontDeskPage() {
                   onAction={() => openCheckout(guest)}
                   onViewProfile={() => handleViewProfile(guest)}
                   onOpenChat={() => handleOpenChat(guest)}
+                  actionDisabled={!canAct}
                 />
               ))
             )}
@@ -418,8 +422,9 @@ export default function FrontDeskPage() {
             </Button>
             <Button
               onClick={confirmCheckin}
-              disabled={!canConfirmCheckin}
+              disabled={!canConfirmCheckin || !canAct}
               className="min-h-[44px] bg-success text-white hover:bg-success/90"
+              title={!canAct ? "You don't have permission to perform this action" : undefined}
             >
               Confirm Check-In
             </Button>
@@ -454,7 +459,9 @@ export default function FrontDeskPage() {
             </Button>
             <Button
               onClick={confirmCheckout}
+              disabled={!canAct}
               className="min-h-[44px] bg-accent text-accent-foreground hover:bg-accent/90"
+              title={!canAct ? "You don't have permission to perform this action" : undefined}
             >
               Confirm Check-Out
             </Button>

@@ -17,6 +17,7 @@ import { Button } from "@/components/ui/button"
 import { mockPayouts } from "@/lib/mock-data"
 import { format } from "date-fns"
 import { TrendingUp, Download, Banknote, Calendar } from "lucide-react"
+import { useStaffPermission } from "@/lib/utils/permissions"
 
 const allTimeTotal = mockPayouts.reduce((sum, p) => sum + p.netPayout, 0)
 
@@ -43,6 +44,8 @@ function statusColor(status: string) {
 }
 
 export default function EarningsPage() {
+  const { canAct } = useStaffPermission("earnings")
+
   return (
     <div className="space-y-8">
       <PageHeader
@@ -148,7 +151,7 @@ export default function EarningsPage() {
                     </Badge>
                   </TableCell>
                   <TableCell>
-                    <Button variant="ghost" size="icon">
+                    <Button variant="ghost" size="icon" disabled={!canAct} title={!canAct ? "You don't have permission to perform this action" : undefined}>
                       <Download className="h-4 w-4" />
                       <span className="sr-only">Download</span>
                     </Button>
